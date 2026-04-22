@@ -1,6 +1,6 @@
-# ride_link
+# RideLink
 
-A new Flutter project.
+Academic mobile project.
 
 ## Getting Started
 
