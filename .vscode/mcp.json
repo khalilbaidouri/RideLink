@@ -3,7 +3,7 @@
     "supabase": {
       "type": "http",
       "url": "https://mcp.supabase.com/mcp?project_ref=oljabqexykgoudggajsm&features=docs,database,debugging,development,functions,storage",
-    }
+    },
   },
   "inputs": []
 }
