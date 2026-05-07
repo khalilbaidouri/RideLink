@@ -1,11 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'features/auth/login.dart';
 import 'features/auth/signup.dart';
 import 'features/home/home_screen.dart';
+import 'features/home/messages_screen.dart';
+import 'features/home/profile_screen.dart';
+import 'features/home/rides_screen.dart';
+import 'features/navigation/app_shell.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'theme/ride_link_theme.dart';
 
@@ -16,41 +22,117 @@ Future<void> main() async {
     url: dotenv.env['SUPABASE_URL'] ?? '',
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
   );
-  runApp(const RideLinkApp());
+  runApp(RideLinkApp());
 }
 
 class RideLinkApp extends StatelessWidget {
-  const RideLinkApp({super.key});
+  RideLinkApp({super.key});
+
+  late final GoRouter _router = _createRouter();
+
+  GoRouter _createRouter() {
+    final authClient = Supabase.instance.client;
+
+    return GoRouter(
+      initialLocation: '/onboarding',
+      refreshListenable: _GoRouterRefreshStream(
+        authClient.auth.onAuthStateChange,
+      ),
+      redirect: (context, state) {
+        final isLoggedIn = authClient.auth.currentSession != null;
+        final location = state.matchedLocation;
+        final isAuthFlow =
+            location == '/login' ||
+            location == '/signup' ||
+            location == '/onboarding';
+
+        if (!isLoggedIn) {
+          if (location.startsWith('/app')) {
+            return '/login';
+          }
+          return null;
+        }
+
+        if (isAuthFlow) {
+          return '/app/home';
+        }
+
+        return null;
+      },
+      routes: [
+        GoRoute(
+          path: '/onboarding',
+          builder: (context, state) => const OnboardingScreen(),
+        ),
+        GoRoute(path: '/login', builder: (context, state) => const Login()),
+        GoRoute(
+          path: '/signup',
+          builder: (context, state) => const SignupScreen(),
+        ),
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) =>
+              AppShell(navigationShell: navigationShell),
+          branches: [
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/app/home',
+                  builder: (context, state) => const HomeScreen(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/app/rides',
+                  builder: (context, state) => const RidesScreen(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/app/messages',
+                  builder: (context, state) => const MessagesScreen(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/app/profile',
+                  builder: (context, state) => const ProfileScreen(),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final lightTheme = RideLinkTheme.light;
-    final darkTheme = RideLinkTheme.dark;
-
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'RideLink',
-      supportedLocales: FLocalizations.supportedLocales,
-      localizationsDelegates: const [...FLocalizations.localizationsDelegates],
-      theme: lightTheme.toApproximateMaterialTheme(),
-      darkTheme: darkTheme.toApproximateMaterialTheme(),
-      themeMode: ThemeMode.system,
-      builder: (context, child) {
-        final fTheme = Theme.of(context).brightness == Brightness.dark
-            ? darkTheme
-            : lightTheme;
-        return FTheme(
-          data: fTheme,
-          child: FToaster(child: FTooltipGroup(child: child!)),
-        );
-      },
-      routes: {
-        '/onboarding': (context) => const OnboardingScreen(),
-        '/': (context) => const SignupScreen(),
-        '/login': (context) => const Login(),
-        '/home': (context) => const HomeScreen(),
-      },
-      initialRoute: '/onboarding',
+      theme: RideLinkTheme.light,
+      themeMode: ThemeMode.light,
+      routerConfig: _router,
     );
+  }
+}
+
+class _GoRouterRefreshStream extends ChangeNotifier {
+  _GoRouterRefreshStream(Stream<dynamic> stream) {
+    _subscription = stream.listen((_) => notifyListeners());
+  }
+
+  late final StreamSubscription<dynamic> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
   }
 }

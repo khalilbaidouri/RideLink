@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum UserRole { passenger, driver, both }
@@ -18,31 +18,9 @@ class _SignupScreenState extends State<SignupScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  late final FTextFieldControl _fullNameControl;
-  late final FTextFieldControl _emailControl;
-  late final FTextFieldControl _phoneControl;
-  late final FTextFieldControl _passwordControl;
-
   UserRole _role = UserRole.passenger;
   bool _isLoading = false;
   bool _acceptedTerms = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _fullNameControl = FTextFieldControl.managed(
-      controller: _fullNameController,
-    );
-    _emailControl = FTextFieldControl.managed(
-      controller: _emailController,
-    );
-    _phoneControl = FTextFieldControl.managed(
-      controller: _phoneController,
-    );
-    _passwordControl = FTextFieldControl.managed(
-      controller: _passwordController,
-    );
-  }
 
   @override
   void dispose() {
@@ -60,7 +38,6 @@ class _SignupScreenState extends State<SignupScreen> {
       case UserRole.both:
         return 'BOTH';
       case UserRole.passenger:
-      default:
         return 'PASSENGER';
     }
   }
@@ -94,7 +71,7 @@ class _SignupScreenState extends State<SignupScreen> {
       });
 
       if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed('/home');
+      context.go('/app/home');
     } on AuthException catch (error) {
       _showMessage(error.message);
     } catch (error) {
@@ -110,24 +87,29 @@ class _SignupScreenState extends State<SignupScreen> {
 
   void _showMessage(String message) {
     if (!mounted) return;
-    showFToast(
-      context: context,
-      icon: const Icon(FIcons.triangleAlert),
-      title: Text(message),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message)),
+          ],
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = FTheme.of(context);
-    final colors = theme.colors;
+    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return FScaffold(
-      child: Container(
+    return Scaffold(
+      body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [colors.background, colors.muted],
+            colors: [colors.surface, colors.surfaceContainerHighest],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -153,151 +135,176 @@ class _SignupScreenState extends State<SignupScreen> {
                     'Join the community',
                     style: textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w800,
-                      color: colors.foreground,
+                      color: colors.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Sustainable travel starts with your first shared ride.',
                     style: textTheme.bodyMedium?.copyWith(
-                      color: colors.mutedForeground,
+                      color: colors.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 18),
-                  FCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        FTextFormField(
-                          control: _fullNameControl,
-                          label: const Text('Full Name'),
-                          hint: 'John Doe',
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter your full name';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                        FTextFormField.email(
-                          control: _emailControl,
-                          label: const Text('Email'),
-                          hint: 'john@example.com',
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter your email';
-                            }
-                            if (!value.contains('@')) {
-                              return 'Enter a valid email address';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                        FTextFormField(
-                          control: _phoneControl,
-                          label: const Text('Phone Number'),
-                          hint: '+212 6 000-0000',
-                          keyboardType: TextInputType.phone,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter your phone number';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 14),
-                        Text(
-                          'I want to travel as',
-                          style: textTheme.labelLarge?.copyWith(
-                            color: colors.mutedForeground,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: [
-                            _RolePill(
-                              label: 'PASSENGER',
-                              selected: _role == UserRole.passenger,
-                              onPress: () => setState(() {
-                                _role = UserRole.passenger;
-                              }),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextFormField(
+                            controller: _fullNameController,
+                            textInputAction: TextInputAction.next,
+                            decoration: const InputDecoration(
+                              labelText: 'Full Name',
+                              hintText: 'John Doe',
                             ),
-                            _RolePill(
-                              label: 'DRIVER',
-                              selected: _role == UserRole.driver,
-                              onPress: () => setState(() {
-                                _role = UserRole.driver;
-                              }),
-                            ),
-                            _RolePill(
-                              label: 'BOTH',
-                              selected: _role == UserRole.both,
-                              onPress: () => setState(() {
-                                _role = UserRole.both;
-                              }),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        FTextFormField.password(
-                          control: _passwordControl,
-                          label: const Text('Password'),
-                          hint: 'Min. 6 characters',
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter a password';
-                            }
-                            if (value.trim().length < 6) {
-                              return 'Password must be at least 6 characters';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        FormField<bool>(
-                          initialValue: _acceptedTerms,
-                          validator: (value) => (value ?? false)
-                              ? null
-                              : 'Please accept the Terms of Service and Privacy Policy.',
-                          builder: (state) => FCheckbox(
-                            leadingLabel: true,
-                            label: const Text(
-                              'I agree to the Terms of Service and Privacy Policy',
-                            ),
-                            error: state.errorText == null
-                                ? null
-                                : Text(state.errorText!),
-                            value: state.value ?? false,
-                            onChange: (value) {
-                              state.didChange(value);
-                              setState(() {
-                                _acceptedTerms = value;
-                              });
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Please enter your full name';
+                              }
+                              return null;
                             },
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        FButton(
-                          variant: FButtonVariant.secondary,
-                          onPress: _isLoading ? null : _submit,
-                          child: _isLoading
-                              ? const FCircularProgress()
-                              : const Text('Create Account'),
-                        ),
-                      ],
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            autofillHints: const [AutofillHints.email],
+                            textInputAction: TextInputAction.next,
+                            decoration: const InputDecoration(
+                              labelText: 'Email',
+                              hintText: 'john@example.com',
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Please enter your email';
+                              }
+                              if (!value.contains('@')) {
+                                return 'Enter a valid email address';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                            textInputAction: TextInputAction.next,
+                            decoration: const InputDecoration(
+                              labelText: 'Phone Number',
+                              hintText: '+212 6 000-0000',
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Please enter your phone number';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            'I want to travel as',
+                            style: textTheme.labelLarge?.copyWith(
+                              color: colors.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: [
+                              _RolePill(
+                                label: 'PASSENGER',
+                                selected: _role == UserRole.passenger,
+                                onPress: () => setState(() {
+                                  _role = UserRole.passenger;
+                                }),
+                              ),
+                              _RolePill(
+                                label: 'DRIVER',
+                                selected: _role == UserRole.driver,
+                                onPress: () => setState(() {
+                                  _role = UserRole.driver;
+                                }),
+                              ),
+                              _RolePill(
+                                label: 'BOTH',
+                                selected: _role == UserRole.both,
+                                onPress: () => setState(() {
+                                  _role = UserRole.both;
+                                }),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: true,
+                            autofillHints: const [AutofillHints.newPassword],
+                            decoration: const InputDecoration(
+                              labelText: 'Password',
+                              hintText: 'Min. 6 characters',
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Please enter a password';
+                              }
+                              if (value.trim().length < 6) {
+                                return 'Password must be at least 6 characters';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          FormField<bool>(
+                            initialValue: _acceptedTerms,
+                            validator: (value) => (value ?? false)
+                                ? null
+                                : 'Please accept the Terms of Service and Privacy Policy.',
+                            builder: (state) => CheckboxListTile(
+                              value: state.value ?? false,
+                              onChanged: (value) {
+                                state.didChange(value);
+                                setState(() {
+                                  _acceptedTerms = value ?? false;
+                                });
+                              },
+                              contentPadding: EdgeInsets.zero,
+                              controlAffinity: ListTileControlAffinity.leading,
+                              title: const Text(
+                                'I agree to the Terms of Service and Privacy Policy',
+                              ),
+                              subtitle: state.errorText == null
+                                  ? null
+                                  : Text(state.errorText!),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _submit,
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text('Create Account'),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 18),
                   Center(
-                    child: FButton(
-                      variant: FButtonVariant.ghost,
-                      mainAxisSize: MainAxisSize.min,
-                      onPress: () {
-                        Navigator.of(context).pushReplacementNamed('/login');
+                    child: TextButton(
+                      onPressed: () {
+                        context.go('/login');
                       },
                       child: const Text('Already have an account? Log in'),
                     ),
@@ -325,13 +332,23 @@ class _RolePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FButton(
-      variant: FButtonVariant.outline,
-      size: FButtonSizeVariant.sm,
-      mainAxisSize: MainAxisSize.min,
+    final colors = Theme.of(context).colorScheme;
+
+    return ChoiceChip(
+      label: Text(label),
       selected: selected,
-      onPress: onPress,
-      child: Text(label),
+      onSelected: (_) => onPress(),
+      selectedColor: colors.primaryContainer,
+      labelStyle: TextStyle(
+        color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
+        fontWeight: FontWeight.w600,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: colors.outlineVariant),
+      ),
+      backgroundColor: colors.surfaceVariant,
+      showCheckmark: false,
     );
   }
 }
