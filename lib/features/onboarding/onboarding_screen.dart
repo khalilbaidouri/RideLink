@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
+import 'package:go_router/go_router.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -18,19 +18,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       subtitle:
           'Find affordable rides between cities and connect with neighborly travelers across Morocco.',
       badge: 'Eco-friendly',
-      icon: FIcons.leaf,
+      icon: Icons.eco_outlined,
     ),
     _OnboardingSlide(
       title: 'Simple & Fast Booking',
       subtitle: 'Book a seat in seconds, no hassle.',
       badge: 'Instant Booking',
-      icon: FIcons.map,
+      icon: Icons.map_outlined,
     ),
     _OnboardingSlide(
       title: 'Good for the Planet',
       subtitle: 'Fewer cars, less traffic, less CO2.',
       badge: 'Renewable',
-      icon: FIcons.earth,
+      icon: Icons.public,
     ),
   ];
 
@@ -59,15 +59,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = FTheme.of(context);
-    final colors = theme.colors;
-    final textTheme = Theme.of(context).textTheme;
+    final colors = Theme.of(context).colorScheme;
 
-    return FScaffold(
-      child: Container(
+    return Scaffold(
+      body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [colors.background, colors.muted],
+            colors: [colors.surface, colors.surfaceContainerHighest],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -76,16 +74,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    FButton(
-                      variant: FButtonVariant.ghost,
-                      mainAxisSize: MainAxisSize.min,
-                      onPress: _skip,
-                      child: const Text('Skip'),
-                    ),
+                    TextButton(onPressed: _skip, child: const Text('Skip')),
                   ],
                 ),
               ),
@@ -99,15 +95,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   },
                   children: [
                     for (final slide in _slides)
-                      _OnboardingSlideView(
-                        slide: slide,
-                      ),
+                      _OnboardingSlideView(slide: slide),
                     _WelcomeSlide(
                       onSignUp: () {
-                        Navigator.of(context).pushReplacementNamed('/');
+                        context.go('/signup');
                       },
                       onLogin: () {
-                        Navigator.of(context).pushReplacementNamed('/login');
+                        context.go('/login');
                       },
                     ),
                   ],
@@ -117,17 +111,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
                 child: Column(
                   children: [
-                    _Indicator(
-                      index: _index,
-                      total: _slides.length + 1,
-                    ),
+                    _Indicator(index: _index, total: _slides.length + 1),
                     const SizedBox(height: 16),
-                    FButton(
-                      variant: FButtonVariant.secondary,
-                      onPress: _goNext,
-                      child: Text(_index < _slides.length
-                          ? 'Get Started'
-                          : 'Continue'),
+                    ElevatedButton(
+                      onPressed: _goNext,
+                      child: Text(
+                        _index < _slides.length ? 'Get Started' : 'Continue',
+                      ),
                     ),
                   ],
                 ),
@@ -161,8 +151,7 @@ class _OnboardingSlideView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = FTheme.of(context);
-    final colors = theme.colors;
+    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Padding(
@@ -170,13 +159,13 @@ class _OnboardingSlideView extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 10),
-          FCard(
+          Card(
             child: Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 gradient: LinearGradient(
-                  colors: [colors.muted, colors.mutedForeground],
+                  colors: [colors.surfaceContainerHighest, colors.surface],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -192,15 +181,11 @@ class _OnboardingSlideView extends StatelessWidget {
                   Container(
                     height: 220,
                     decoration: BoxDecoration(
-                      color: colors.muted,
+                      color: colors.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(18),
                     ),
                     child: Center(
-                      child: Icon(
-                        slide.icon,
-                        size: 60,
-                        color: colors.primary,
-                      ),
+                      child: Icon(slide.icon, size: 60, color: colors.primary),
                     ),
                   ),
                 ],
@@ -213,7 +198,7 @@ class _OnboardingSlideView extends StatelessWidget {
             textAlign: TextAlign.center,
             style: textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w700,
-              color: colors.foreground,
+              color: colors.onSurface,
             ),
           ),
           const SizedBox(height: 10),
@@ -221,7 +206,7 @@ class _OnboardingSlideView extends StatelessWidget {
             slide.subtitle,
             textAlign: TextAlign.center,
             style: textTheme.bodyMedium?.copyWith(
-              color: colors.mutedForeground,
+              color: colors.onSurfaceVariant,
             ),
           ),
         ],
@@ -231,18 +216,14 @@ class _OnboardingSlideView extends StatelessWidget {
 }
 
 class _WelcomeSlide extends StatelessWidget {
-  const _WelcomeSlide({
-    required this.onSignUp,
-    required this.onLogin,
-  });
+  const _WelcomeSlide({required this.onSignUp, required this.onLogin});
 
   final VoidCallback onSignUp;
   final VoidCallback onLogin;
 
   @override
   Widget build(BuildContext context) {
-    final theme = FTheme.of(context);
-    final colors = theme.colors;
+    final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Padding(
@@ -254,12 +235,12 @@ class _WelcomeSlide extends StatelessWidget {
             height: 160,
             width: 160,
             decoration: BoxDecoration(
-              color: colors.muted,
+              color: colors.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(40),
             ),
             child: Center(
               child: Icon(
-                FIcons.car,
+                Icons.directions_car_filled,
                 size: 64,
                 color: colors.primary,
               ),
@@ -278,41 +259,36 @@ class _WelcomeSlide extends StatelessWidget {
             'Travel together, reduce costs,\nand see Morocco differently.',
             textAlign: TextAlign.center,
             style: textTheme.bodyMedium?.copyWith(
-              color: colors.mutedForeground,
+              color: colors.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 20),
-          FCard(
-            child: Row(
-              children: [
-                Expanded(
-                  child: _InfoPill(
-                    icon: FIcons.shieldCheck,
-                    label: 'Verified Drivers',
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _InfoPill(
+                      icon: Icons.verified_user_outlined,
+                      label: 'Verified Drivers',
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _InfoPill(
-                    icon: FIcons.leaf,
-                    label: 'Sustainable Travel',
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _InfoPill(
+                      icon: Icons.eco_outlined,
+                      label: 'Sustainable Travel',
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 18),
-          FButton(
-            variant: FButtonVariant.secondary,
-            onPress: onSignUp,
-            child: const Text('Sign Up'),
-          ),
+          ElevatedButton(onPressed: onSignUp, child: const Text('Sign Up')),
           const SizedBox(height: 10),
-          FButton(
-            variant: FButtonVariant.outline,
-            onPress: onLogin,
-            child: const Text('Login'),
-          ),
+          OutlinedButton(onPressed: onLogin, child: const Text('Login')),
         ],
       ),
     );
@@ -327,13 +303,12 @@ class _InfoPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = FTheme.of(context);
-    final colors = theme.colors;
+    final colors = Theme.of(context).colorScheme;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: colors.muted,
+        color: colors.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -355,19 +330,18 @@ class _Badge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = FTheme.of(context);
-    final colors = theme.colors;
+    final colors = Theme.of(context).colorScheme;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: colors.muted,
+        color: colors.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         text,
         style: TextStyle(
-          color: colors.muted,
+          color: colors.onSurfaceVariant,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -383,8 +357,7 @@ class _Indicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = FTheme.of(context);
-    final colors = theme.colors;
+    final colors = Theme.of(context).colorScheme;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -396,7 +369,7 @@ class _Indicator extends StatelessWidget {
           height: 6,
           width: isActive ? 18 : 8,
           decoration: BoxDecoration(
-            color: isActive ? colors.primary : colors.mutedForeground,
+            color: isActive ? colors.primary : colors.onSurfaceVariant,
             borderRadius: BorderRadius.circular(999),
           ),
         );
