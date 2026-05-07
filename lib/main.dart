@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'features/auth/login.dart';
 import 'features/auth/signup.dart';
 import 'features/home/home_screen.dart';
+import 'features/onboarding/onboarding_screen.dart';
 import 'theme/ride_link_theme.dart';
 
 Future<void> main() async {
@@ -44,11 +45,12 @@ class RideLinkApp extends StatelessWidget {
         );
       },
       routes: {
+        '/onboarding': (context) => const OnboardingScreen(),
         '/': (context) => const SignupScreen(),
         '/login': (context) => const Login(),
         '/home': (context) => const HomeScreen(),
       },
-      initialRoute: '/login',
+      initialRoute: '/onboarding',
     );
   }
 }
