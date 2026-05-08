@@ -18,19 +18,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       subtitle:
           'Find affordable rides between cities and connect with neighborly travelers across Morocco.',
       badge: 'Eco-friendly',
-      icon: Icons.eco_outlined,
+      imagePath: 'lib/assets/images/first.png',
     ),
     _OnboardingSlide(
       title: 'Simple & Fast Booking',
       subtitle: 'Book a seat in seconds, no hassle.',
       badge: 'Instant Booking',
-      icon: Icons.map_outlined,
+      imagePath: 'lib/assets/images/second.png',
     ),
     _OnboardingSlide(
       title: 'Good for the Planet',
       subtitle: 'Fewer cars, less traffic, less CO2.',
       badge: 'Renewable',
-      icon: Icons.public,
+      imagePath: 'lib/assets/images/third.png',
     ),
   ];
 
@@ -135,13 +135,13 @@ class _OnboardingSlide {
     required this.title,
     required this.subtitle,
     required this.badge,
-    required this.icon,
+    required this.imagePath,
   });
 
   final String title;
   final String subtitle;
   final String badge;
-  final IconData icon;
+  final String imagePath;
 }
 
 class _OnboardingSlideView extends StatelessWidget {
@@ -160,16 +160,13 @@ class _OnboardingSlideView extends StatelessWidget {
         children: [
           const SizedBox(height: 10),
           Card(
-            child: Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                gradient: LinearGradient(
-                  colors: [colors.surfaceContainerHighest, colors.surface],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
+            elevation: 0,
+            color: colors.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -179,26 +176,30 @@ class _OnboardingSlideView extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Container(
-                    height: 220,
+                    height: 240,
                     decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
                       color: colors.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(18),
                     ),
-                    child: Center(
-                      child: Icon(slide.icon, size: 60, color: colors.primary),
+                    clipBehavior: Clip.antiAlias,
+                    child: Image.asset(
+                      slide.imagePath,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
           Text(
             slide.title,
             textAlign: TextAlign.center,
             style: textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w700,
-              color: colors.onSurface,
+              color: colors.primary,
             ),
           ),
           const SizedBox(height: 10),
@@ -207,6 +208,15 @@ class _OnboardingSlideView extends StatelessWidget {
             textAlign: TextAlign.center,
             style: textTheme.bodyMedium?.copyWith(
               color: colors.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            width: 26,
+            height: 4,
+            decoration: BoxDecoration(
+              color: colors.primary,
+              borderRadius: BorderRadius.circular(999),
             ),
           ),
         ],
@@ -335,13 +345,13 @@ class _Badge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest,
+        color: colors.primaryContainer,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         text,
         style: TextStyle(
-          color: colors.onSurfaceVariant,
+          color: colors.onPrimaryContainer,
           fontWeight: FontWeight.w600,
         ),
       ),

@@ -2,24 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class Login extends StatefulWidget {
-  const Login({super.key});
+class ForgotPasswordScreen extends StatefulWidget {
+  const ForgotPasswordScreen({super.key});
 
   @override
-  State<Login> createState() => _LoginState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _LoginState extends State<Login> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-
   bool _isLoading = false;
 
   @override
   void dispose() {
     _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
@@ -33,13 +30,11 @@ class _LoginState extends State<Login> {
 
     try {
       final client = Supabase.instance.client;
-      await client.auth.signInWithPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+      final email = _emailController.text.trim();
+      await client.auth.resetPasswordForEmail(email);
 
       if (!mounted) return;
-      context.go('/app/home');
+      context.go('/reset-email-sent?email=${Uri.encodeComponent(email)}');
     } on AuthException catch (error) {
       _showMessage(error.message);
     } catch (error) {
@@ -101,6 +96,13 @@ class _LoginState extends State<Login> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
+                          // Align(
+                          //   alignment: Alignment.centerLeft,
+                          //   child: IconButton(
+                          //     onPressed: () => context.pop(),
+                          //     icon: const Icon(Icons.arrow_back),
+                          //   ),
+                          // ),
                           const SizedBox(height: 6),
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -131,7 +133,7 @@ class _LoginState extends State<Login> {
                           ),
                           const SizedBox(height: 18),
                           Text(
-                            'Welcome back',
+                            'Forgot Password?',
                             style: textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.w800,
                               color: colors.onSurface,
@@ -140,7 +142,7 @@ class _LoginState extends State<Login> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Access your community carpool network',
+                            'Enter your email and we\'ll send you a reset link.',
                             style: textTheme.bodyMedium?.copyWith(
                               color: colors.onSurfaceVariant,
                             ),
@@ -192,54 +194,7 @@ class _LoginState extends State<Login> {
                                       return null;
                                     },
                                   ),
-                                  const SizedBox(height: 12),
-                                  TextFormField(
-                                    controller: _passwordController,
-                                    obscureText: true,
-                                    autofillHints: const [AutofillHints.password],
-                                    decoration: InputDecoration(
-                                      labelText: 'Password',
-                                      hintText: '••••••••',
-                                      prefixIcon:
-                                          const Icon(Icons.lock_outline),
-                                      filled: true,
-                                      fillColor:
-                                          colors.surfaceContainerHighest,
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                        borderSide:
-                                            BorderSide(color: colors.outline),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                        borderSide: BorderSide(
-                                          color: colors.outlineVariant,
-                                        ),
-                                      ),
-                                    ),
-                                    validator: (value) {
-                                      if (value == null || value.trim().isEmpty) {
-                                        return 'Please enter your password';
-                                      }
-                                      if (value.trim().length < 6) {
-                                        return 'Password must be at least 6 characters';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Align(
-                                    alignment: Alignment.centerRight,
-                                    child: TextButton(
-                                      onPressed: () =>
-                                          context.go('/forgot-password'),
-                                      child: Text(
-                                        'Forgot password?',
-                                        style: TextStyle(color: colors.primary),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 14),
                                   SizedBox(
                                     width: double.infinity,
                                     child: ElevatedButton(
@@ -260,18 +215,18 @@ class _LoginState extends State<Login> {
                                                 strokeWidth: 2,
                                               ),
                                             )
-                                          : const Text('Sign In'),
+                                          : const Text('Send Reset Link'),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                           ),
-                          const SizedBox(height: 18),
+                          const SizedBox(height: 16),
                           TextButton(
-                            onPressed: () => context.go('/signup'),
+                            onPressed: () => context.go('/login'),
                             child:
-                                const Text('Don\'t have an account? Sign up'),
+                                const Text('Remember your password? Log in'),
                           ),
                         ],
                       ),

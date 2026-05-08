@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import 'features/auth/forgot_password.dart';
 import 'features/auth/login.dart';
+import 'features/auth/reset_email_sent.dart';
 import 'features/auth/signup.dart';
 import 'features/home/home_screen.dart';
 import 'features/home/messages_screen.dart';
@@ -42,9 +44,11 @@ class RideLinkApp extends StatelessWidget {
         final isLoggedIn = authClient.auth.currentSession != null;
         final location = state.matchedLocation;
         final isAuthFlow =
-            location == '/login' ||
-            location == '/signup' ||
-            location == '/onboarding';
+          location == '/login' ||
+          location == '/signup' ||
+          location == '/onboarding' ||
+          location == '/forgot-password' ||
+          location == '/reset-email-sent';
 
         if (!isLoggedIn) {
           if (location.startsWith('/app')) {
@@ -65,6 +69,17 @@ class RideLinkApp extends StatelessWidget {
           builder: (context, state) => const OnboardingScreen(),
         ),
         GoRoute(path: '/login', builder: (context, state) => const Login()),
+        GoRoute(
+          path: '/forgot-password',
+          builder: (context, state) => const ForgotPasswordScreen(),
+        ),
+        GoRoute(
+          path: '/reset-email-sent',
+          builder: (context, state) {
+            final email = state.uri.queryParameters['email'] ?? '';
+            return ResetEmailSentScreen(email: email);
+          },
+        ),
         GoRoute(
           path: '/signup',
           builder: (context, state) => const SignupScreen(),
