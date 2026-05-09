@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // ← AJOUT
 import 'features/auth/forgot_password.dart';
 import 'features/auth/login.dart';
 import 'features/auth/reset_email_sent.dart';
@@ -16,6 +16,8 @@ import 'features/home/rides_screen.dart';
 import 'features/navigation/app_shell.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'theme/ride_link_theme.dart';
+import 'features/cities/presentation/screens/city_picker_screen.dart';   // ← AJOUT
+import 'features/vehicles/presentation/screens/vehicles_screen.dart';     // ← AJOUT
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +26,7 @@ Future<void> main() async {
     url: dotenv.env['SUPABASE_URL'] ?? '',
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
   );
-  runApp(RideLinkApp());
+  runApp(ProviderScope(child: RideLinkApp())); // ← MODIFIÉ
 }
 
 class RideLinkApp extends StatelessWidget {
@@ -88,40 +90,42 @@ class RideLinkApp extends StatelessWidget {
           builder: (context, state, navigationShell) =>
               AppShell(navigationShell: navigationShell),
           branches: [
-            StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: '/app/home',
-                  builder: (context, state) => const HomeScreen(),
-                ),
-              ],
-            ),
-            StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: '/app/rides',
-                  builder: (context, state) => const RidesScreen(),
-                ),
-              ],
-            ),
-            StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: '/app/messages',
-                  builder: (context, state) => const MessagesScreen(),
-                ),
-              ],
-            ),
-            StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: '/app/profile',
-                  builder: (context, state) => const ProfileScreen(),
-                ),
-              ],
-            ),
+            StatefulShellBranch(routes: [
+              GoRoute(
+                path: '/app/home',
+                builder: (context, state) => const HomeScreen(),
+              ),
+            ]),
+            StatefulShellBranch(routes: [
+              GoRoute(
+                path: '/app/rides',
+                builder: (context, state) => const RidesScreen(),
+              ),
+            ]),
+            StatefulShellBranch(routes: [
+              GoRoute(
+                path: '/app/messages',
+                builder: (context, state) => const MessagesScreen(),
+              ),
+            ]),
+            StatefulShellBranch(routes: [
+              GoRoute(
+                path: '/app/profile',
+                builder: (context, state) => const ProfileScreen(),
+              ),
+            ]),
           ],
         ),
+        GoRoute(                                                           // ← AJOUT
+          path: '/app/cities',                                             // ← AJOUT
+          builder: (context, state) => const CityPickerScreen(            // ← AJOUT
+            title: 'Choisir une ville',                                   // ← AJOUT
+          ),                                                               // ← AJOUT
+        ),                                                                 // ← AJOUT
+        GoRoute(                                                           // ← AJOUT
+          path: '/app/vehicles',                                           // ← AJOUT
+          builder: (context, state) => const VehiclesScreen(),            // ← AJOUT
+        ),                                                                 // ← AJOUT
       ],
     );
   }
