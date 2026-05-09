@@ -170,8 +170,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                       prefixIcon:
                                           const Icon(Icons.email_outlined),
                                       filled: true,
-                                      fillColor:
-                                          colors.surfaceContainerHighest,
+                                      fillColor: colors.surfaceContainerHighest,
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide:
@@ -185,7 +184,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                       ),
                                     ),
                                     validator: (value) {
-                                      if (value == null || value.trim().isEmpty) {
+                                      if (value == null ||
+                                          value.trim().isEmpty) {
                                         return 'Please enter your email';
                                       }
                                       if (!value.contains('@')) {
@@ -203,7 +203,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                           vertical: 14,
                                         ),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(14),
+                                          borderRadius:
+                                              BorderRadius.circular(14),
                                         ),
                                       ),
                                       onPressed: _isLoading ? null : _submit,
@@ -225,8 +226,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           const SizedBox(height: 16),
                           TextButton(
                             onPressed: () => context.go('/login'),
-                            child:
-                                const Text('Remember your password? Log in'),
+                            child: const Text('Remember your password? Log in'),
                           ),
                         ],
                       ),

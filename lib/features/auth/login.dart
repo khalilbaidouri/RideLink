@@ -168,8 +168,7 @@ class _LoginState extends State<Login> {
                                       prefixIcon:
                                           const Icon(Icons.email_outlined),
                                       filled: true,
-                                      fillColor:
-                                          colors.surfaceContainerHighest,
+                                      fillColor: colors.surfaceContainerHighest,
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide:
@@ -183,7 +182,8 @@ class _LoginState extends State<Login> {
                                       ),
                                     ),
                                     validator: (value) {
-                                      if (value == null || value.trim().isEmpty) {
+                                      if (value == null ||
+                                          value.trim().isEmpty) {
                                         return 'Please enter your email';
                                       }
                                       if (!value.contains('@')) {
@@ -196,15 +196,16 @@ class _LoginState extends State<Login> {
                                   TextFormField(
                                     controller: _passwordController,
                                     obscureText: true,
-                                    autofillHints: const [AutofillHints.password],
+                                    autofillHints: const [
+                                      AutofillHints.password
+                                    ],
                                     decoration: InputDecoration(
                                       labelText: 'Password',
                                       hintText: '••••••••',
                                       prefixIcon:
                                           const Icon(Icons.lock_outline),
                                       filled: true,
-                                      fillColor:
-                                          colors.surfaceContainerHighest,
+                                      fillColor: colors.surfaceContainerHighest,
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide:
@@ -218,7 +219,8 @@ class _LoginState extends State<Login> {
                                       ),
                                     ),
                                     validator: (value) {
-                                      if (value == null || value.trim().isEmpty) {
+                                      if (value == null ||
+                                          value.trim().isEmpty) {
                                         return 'Please enter your password';
                                       }
                                       if (value.trim().length < 6) {
@@ -248,7 +250,8 @@ class _LoginState extends State<Login> {
                                           vertical: 14,
                                         ),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(14),
+                                          borderRadius:
+                                              BorderRadius.circular(14),
                                         ),
                                       ),
                                       onPressed: _isLoading ? null : _submit,
