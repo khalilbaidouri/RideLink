@@ -86,8 +86,8 @@ class RideLinkTheme {
     textTheme: _textTheme(lightColorScheme),
     scaffoldBackgroundColor: lightColorScheme.surface,
 
-    // ✅ FIX 1 : CardThemeData -> CardTheme
-    cardTheme: CardTheme(
+    // 🔴 FIX 1 : CardThemeData OK pour ton CI
+    cardTheme: CardThemeData(
       color: const Color(0xFFFFFFFF),
       elevation: 2,
       shadowColor: lightColorScheme.shadow,
@@ -111,7 +111,10 @@ class RideLinkTheme {
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: lightColorScheme.primary, width: 1.5),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 12,
+      ),
     ),
 
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -119,7 +122,9 @@ class RideLinkTheme {
         backgroundColor: lightColorScheme.secondary,
         foregroundColor: lightColorScheme.onSecondary,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
         textStyle: const TextStyle(fontWeight: FontWeight.w600),
       ),
     ),
@@ -129,7 +134,9 @@ class RideLinkTheme {
         foregroundColor: lightColorScheme.primary,
         side: BorderSide(color: lightColorScheme.outline),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
         textStyle: const TextStyle(fontWeight: FontWeight.w600),
       ),
     ),
@@ -141,7 +148,7 @@ class RideLinkTheme {
       ),
     ),
 
-    // ✅ FIX 2 : WidgetStateProperty -> MaterialStateProperty
+    // 🔴 FIX 2
     checkboxTheme: CheckboxThemeData(
       fillColor: MaterialStateProperty.resolveWith((states) {
         if (states.contains(MaterialState.selected)) {
@@ -149,10 +156,9 @@ class RideLinkTheme {
         }
         return lightColorScheme.surfaceContainerHighest;
       }),
-
-      // FIX 3
-      checkColor: MaterialStateProperty.all(lightColorScheme.onPrimary),
-
+      checkColor: MaterialStateProperty.all(
+        lightColorScheme.onPrimary,
+      ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(4),
       ),
@@ -160,7 +166,9 @@ class RideLinkTheme {
 
     snackBarTheme: SnackBarThemeData(
       backgroundColor: lightColorScheme.inverseSurface,
-      contentTextStyle: TextStyle(color: lightColorScheme.onInverseSurface),
+      contentTextStyle: TextStyle(
+        color: lightColorScheme.onInverseSurface,
+      ),
     ),
   );
 }
