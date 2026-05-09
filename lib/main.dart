@@ -43,12 +43,11 @@ class RideLinkApp extends StatelessWidget {
       redirect: (context, state) {
         final isLoggedIn = authClient.auth.currentSession != null;
         final location = state.matchedLocation;
-        final isAuthFlow =
-          location == '/login' ||
-          location == '/signup' ||
-          location == '/onboarding' ||
-          location == '/forgot-password' ||
-          location == '/reset-email-sent';
+        final isAuthFlow = location == '/login' ||
+            location == '/signup' ||
+            location == '/onboarding' ||
+            location == '/forgot-password' ||
+            location == '/reset-email-sent';
 
         if (!isLoggedIn) {
           if (location.startsWith('/app')) {
