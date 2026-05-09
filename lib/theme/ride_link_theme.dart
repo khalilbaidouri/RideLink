@@ -85,12 +85,17 @@ class RideLinkTheme {
     colorScheme: lightColorScheme,
     textTheme: _textTheme(lightColorScheme),
     scaffoldBackgroundColor: lightColorScheme.surface,
-    cardTheme: CardThemeData(
+
+    // ✅ FIX 1 : CardThemeData -> CardTheme
+    cardTheme: CardTheme(
       color: const Color(0xFFFFFFFF),
       elevation: 2,
       shadowColor: lightColorScheme.shadow,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
     ),
+
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: const Color(0xFFF1F5ED),
@@ -108,6 +113,7 @@ class RideLinkTheme {
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     ),
+
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: lightColorScheme.secondary,
@@ -117,6 +123,7 @@ class RideLinkTheme {
         textStyle: const TextStyle(fontWeight: FontWeight.w600),
       ),
     ),
+
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: lightColorScheme.primary,
@@ -126,22 +133,31 @@ class RideLinkTheme {
         textStyle: const TextStyle(fontWeight: FontWeight.w600),
       ),
     ),
+
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: lightColorScheme.primary,
         textStyle: const TextStyle(fontWeight: FontWeight.w600),
       ),
     ),
+
+    // ✅ FIX 2 : WidgetStateProperty -> MaterialStateProperty
     checkboxTheme: CheckboxThemeData(
-      fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
+      fillColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
           return lightColorScheme.primary;
         }
         return lightColorScheme.surfaceContainerHighest;
       }),
-      checkColor: WidgetStatePropertyAll(lightColorScheme.onPrimary),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+
+      // FIX 3
+      checkColor: MaterialStateProperty.all(lightColorScheme.onPrimary),
+
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+      ),
     ),
+
     snackBarTheme: SnackBarThemeData(
       backgroundColor: lightColorScheme.inverseSurface,
       contentTextStyle: TextStyle(color: lightColorScheme.onInverseSurface),
