@@ -14,7 +14,7 @@ import 'package:ride_link/theme/ride_link_theme.dart';
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const RideLinkApp());
+    await tester.pumpWidget(RideLinkApp());
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);
