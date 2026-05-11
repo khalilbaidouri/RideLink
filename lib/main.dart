@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // ← AJOUT
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'features/auth/forgot_password.dart';
 import 'features/auth/login.dart';
 import 'features/auth/reset_email_sent.dart';
@@ -16,8 +16,9 @@ import 'features/home/rides_screen.dart';
 import 'features/navigation/app_shell.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'theme/ride_link_theme.dart';
-import 'features/cities/presentation/screens/city_picker_screen.dart';   // ← AJOUT
-import 'features/vehicles/presentation/screens/vehicles_screen.dart';     // ← AJOUT
+import 'features/cities/presentation/screens/city_picker_screen.dart';
+import 'features/vehicles/presentation/screens/vehicles_screen.dart';
+import 'features/route/route_details_screen.dart'; // ← AJOUT
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +27,7 @@ Future<void> main() async {
     url: dotenv.env['SUPABASE_URL'] ?? '',
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
   );
-  runApp(ProviderScope(child: RideLinkApp())); // ← MODIFIÉ
+  runApp(ProviderScope(child: RideLinkApp()));
 }
 
 class RideLinkApp extends StatelessWidget {
@@ -113,18 +114,29 @@ class RideLinkApp extends StatelessWidget {
                 builder: (context, state) => const ProfileScreen(),
               ),
             ]),
+            StatefulShellBranch(routes: [
+              GoRoute(
+                path: '/app/route-details',
+                builder: (context, state) => const RouteDetailsScreen(),
+              ),
+            ]),
           ],
         ),
-        GoRoute(                                                           // ← AJOUT
-          path: '/app/cities',                                             // ← AJOUT
-          builder: (context, state) => const CityPickerScreen(            // ← AJOUT
-            title: 'Choisir une ville',                                   // ← AJOUT
-          ),                                                               // ← AJOUT
-        ),                                                                 // ← AJOUT
-        GoRoute(                                                           // ← AJOUT
-          path: '/app/vehicles',                                           // ← AJOUT
-          builder: (context, state) => const VehiclesScreen(),            // ← AJOUT
-        ),                                                                 // ← AJOUT
+        GoRoute(
+          path: '/app/cities',
+          builder: (context, state) => const CityPickerScreen(
+            title: 'Choisir une ville',
+          ),
+        ),
+        GoRoute(
+          path: '/app/vehicles',
+          builder: (context, state) => const VehiclesScreen(),
+        ),
+        // 👇 NOUVELLE ROUTE
+        GoRoute(
+          path: '/app/route-details',
+          builder: (context, state) => const RouteDetailsScreen(),
+        ),
       ],
     );
   }
