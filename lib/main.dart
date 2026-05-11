@@ -15,10 +15,10 @@ import 'features/home/profile_screen.dart';
 import 'features/home/rides_screen.dart';
 import 'features/navigation/app_shell.dart';
 import 'features/onboarding/onboarding_screen.dart';
-import 'features/rider/activity_screen.dart';
-import 'features/rider/alerts_screen.dart';
-import 'features/rider/dashboard_screen.dart';
-import 'features/rider/settings_screen.dart';
+import 'features/driver/activity_screen.dart';
+import 'features/driver/alerts_screen.dart';
+import 'features/driver/dashboard_screen.dart';
+import 'features/driver/settings_screen.dart';
 import 'theme/ride_link_theme.dart';
 import 'features/cities/presentation/screens/city_picker_screen.dart'; // ← AJOUT
 import 'features/vehicles/presentation/screens/vehicles_screen.dart'; // ← AJOUT
@@ -46,7 +46,7 @@ const List<NavigationDestination> _passengerDestinations = [
   ),
 ];
 
-const List<NavigationDestination> _riderDestinations = [
+const List<NavigationDestination> _driverDestinations = [
   NavigationDestination(
     icon: Icon(Icons.dashboard_outlined),
     selectedIcon: Icon(Icons.dashboard),
@@ -97,7 +97,7 @@ class RideLinkApp extends StatelessWidget {
         final isLoggedIn = authClient.auth.currentSession != null;
         final location = state.matchedLocation;
         final isPassengerArea = location.startsWith('/passenger');
-        final isRiderArea = location.startsWith('/rider');
+        final isDriverArea = location.startsWith('/driver');
         final isAuthFlow = location == '/login' ||
             location == '/signup' ||
             location == '/onboarding' ||
@@ -106,25 +106,25 @@ class RideLinkApp extends StatelessWidget {
 
         if (!isLoggedIn) {
           roleCache.reset();
-          if (isPassengerArea || isRiderArea) {
+          if (isPassengerArea || isDriverArea) {
             return '/login';
           }
           return null;
         }
 
         final role = await roleCache.getRole(authClient);
-        final isRider = _isRiderRole(role);
-        final homeLocation = isRider ? '/rider/dashboard' : '/passenger/home';
+        final isDriver = _isDriverRole(role);
+        final homeLocation = isDriver ? '/driver/dashboard' : '/passenger/home';
 
         if (isAuthFlow) {
           return homeLocation;
         }
 
-        if (isRider && isPassengerArea) {
-          return '/rider/dashboard';
+        if (isDriver && isPassengerArea) {
+          return '/driver/dashboard';
         }
 
-        if (!isRider && isRiderArea) {
+        if (!isDriver && isDriverArea) {
           return '/passenger/home';
         }
 
@@ -186,30 +186,30 @@ class RideLinkApp extends StatelessWidget {
         StatefulShellRoute.indexedStack(
           builder: (context, state, navigationShell) => AppShell(
             navigationShell: navigationShell,
-            destinations: _riderDestinations,
+            destinations: _driverDestinations,
           ),
           branches: [
             StatefulShellBranch(routes: [
               GoRoute(
-                path: '/rider/dashboard',
+                path: '/driver/dashboard',
                 builder: (context, state) => const DashboardScreen(),
               ),
             ]),
             StatefulShellBranch(routes: [
               GoRoute(
-                path: '/rider/activity',
+                path: '/driver/activity',
                 builder: (context, state) => const ActivityScreen(),
               ),
             ]),
             StatefulShellBranch(routes: [
               GoRoute(
-                path: '/rider/alerts',
+                path: '/driver/alerts',
                 builder: (context, state) => const AlertsScreen(),
               ),
             ]),
             StatefulShellBranch(routes: [
               GoRoute(
-                path: '/rider/settings',
+                path: '/driver/settings',
                 builder: (context, state) => const SettingsScreen(),
               ),
             ]),
@@ -306,6 +306,6 @@ class _RoleCache {
   }
 }
 
-bool _isRiderRole(String role) {
-  return role == 'DRIVER' || role == 'BOTH' || role == 'RIDER';
+bool _isDriverRole(String role) {
+  return role == 'DRIVER' || role == 'BOTH';
 }
