@@ -71,7 +71,8 @@ class _SignupScreenState extends State<SignupScreen> {
       });
 
       if (!mounted) return;
-      context.go('/app/home');
+      final isRider = _role == UserRole.driver || _role == UserRole.both;
+      context.go(isRider ? '/rider/dashboard' : '/passenger/home');
     } on AuthException catch (error) {
       _showMessage(error.message);
     } catch (error) {
