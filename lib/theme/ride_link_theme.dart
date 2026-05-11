@@ -85,12 +85,17 @@ class RideLinkTheme {
     colorScheme: lightColorScheme,
     textTheme: _textTheme(lightColorScheme),
     scaffoldBackgroundColor: lightColorScheme.surface,
+
+    // 🔴 FIX 1 : CardThemeData OK pour ton CI
     cardTheme: CardThemeData(
       color: const Color(0xFFFFFFFF),
       elevation: 2,
       shadowColor: lightColorScheme.shadow,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
     ),
+
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: const Color(0xFFF1F5ED),
@@ -106,45 +111,64 @@ class RideLinkTheme {
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: lightColorScheme.primary, width: 1.5),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 12,
+      ),
     ),
+
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: lightColorScheme.secondary,
         foregroundColor: lightColorScheme.onSecondary,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
         textStyle: const TextStyle(fontWeight: FontWeight.w600),
       ),
     ),
+
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: lightColorScheme.primary,
         side: BorderSide(color: lightColorScheme.outline),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
         textStyle: const TextStyle(fontWeight: FontWeight.w600),
       ),
     ),
+
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: lightColorScheme.primary,
         textStyle: const TextStyle(fontWeight: FontWeight.w600),
       ),
     ),
+
+    // 🔴 FIX 2
     checkboxTheme: CheckboxThemeData(
-      fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
+      fillColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
           return lightColorScheme.primary;
         }
         return lightColorScheme.surfaceContainerHighest;
       }),
-      checkColor: WidgetStatePropertyAll(lightColorScheme.onPrimary),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+      checkColor: MaterialStateProperty.all(
+        lightColorScheme.onPrimary,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+      ),
     ),
+
     snackBarTheme: SnackBarThemeData(
       backgroundColor: lightColorScheme.inverseSurface,
-      contentTextStyle: TextStyle(color: lightColorScheme.onInverseSurface),
+      contentTextStyle: TextStyle(
+        color: lightColorScheme.onInverseSurface,
+      ),
     ),
   );
 }
