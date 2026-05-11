@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../domain/entities/vehicle.dart';
 
@@ -44,39 +45,55 @@ class VehiclesNotifier extends Notifier<VehiclesState> {
     return const VehiclesState(isLoading: true);
   }
 
-  /// Simule un chargement depuis Supabase.
-  /// À remplacer par : `supabase.from('vehicles').select().eq('owner_id', uid)`
+  /// Charge les vehicules du conducteur depuis Supabase.
   Future<void> _loadInitialData() async {
-    await Future.delayed(const Duration(milliseconds: 600));
-    state = state.copyWith(
-      isLoading: false,
-      vehicles: [
-        Vehicle(
-          id: 'v1',
-          ownerId: 'current-user',
-          brand: 'Dacia',
-          model: 'Logan',
-          licensePlate: '123456-A-1',
-          totalSeats: 5,
-          category: VehicleCategory.berline,
-          color: 'Blanc',
-          year: 2021,
-          isDefault: true,
-        ),
-        Vehicle(
-          id: 'v2',
-          ownerId: 'current-user',
-          brand: 'Toyota',
-          model: 'RAV4',
-          licensePlate: '789012-B-5',
-          totalSeats: 7,
-          category: VehicleCategory.suv,
-          color: 'Gris',
-          year: 2022,
-          isDefault: false,
-        ),
-      ],
-    );
+    final client = Supabase.instance.client;
+    final user = client.auth.currentUser;
+    if (user == null) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'No authenticated user found.',
+      );
+      return;
+    }
+
+    try {
+      final response = await client
+          .from('vehicles')
+          .select(
+            'id, driver_id, brand, model, plate_number, seats, color, created_at',
+          )
+          .eq('driver_id', user.id)
+          .order('created_at', ascending: false);
+
+      final vehicles = response
+          .map<Vehicle>(
+            (row) => Vehicle(
+              id: row['id'].toString(),
+              ownerId: row['driver_id'] as String? ?? user.id,
+              brand: row['brand'] as String? ?? '',
+              model: row['model'] as String? ?? '',
+              licensePlate: row['plate_number'] as String? ?? '',
+              totalSeats: row['seats'] as int? ?? 5,
+              category: VehicleCategory.berline,
+              color: row['color'] as String?,
+              year: null,
+              isDefault: false,
+            ),
+          )
+          .toList();
+
+      state = state.copyWith(
+        isLoading: false,
+        vehicles: vehicles,
+        error: null,
+      );
+    } catch (error) {
+      state = state.copyWith(
+        isLoading: false,
+        error: error.toString(),
+      );
+    }
   }
 
   /// Ajoute un nouveau véhicule.
@@ -133,6 +150,7 @@ class VehiclesNotifier extends Notifier<VehiclesState> {
           .toList(),
     );
   }
+
 }
 
 // ---------------------------------------------------------------------------
