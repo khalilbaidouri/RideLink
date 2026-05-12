@@ -16,6 +16,12 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
+# Tasks
+- Badr : Home | Search | Ride Detail
+- Mouad: Profile | Settings | Dashboard 
+- Brahim : Notifications | Booking requests | No rides founs
+- Khalil : 3 Create Ride | Leave a Review
+
 
 # pick_them/
 
