@@ -39,7 +39,7 @@ class _LoginState extends State<Login> {
       );
 
       if (!mounted) return;
-      context.go('/app/home');
+      context.go('/passenger/home');
     } on AuthException catch (error) {
       _showMessage(error.message);
     } catch (error) {
