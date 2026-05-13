@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../models/user_model.dart';
+import 'profile_navbar.dart';
 import '../vehicles/domain/entities/vehicle.dart';
 import '../vehicles/providers/vehicles_provider.dart';
 
@@ -77,6 +79,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const ProfileNavbar(),
               _ProfileHeaderCard(user: user),
               const SizedBox(height: 18),
               _VehiclesSection(
@@ -97,7 +100,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 onRides: () => _showMenuSnack(context, 'My Rides'),
                 onNotifications:
                     () => _showMenuSnack(context, 'Notifications'),
-                onSettings: () => _showMenuSnack(context, 'Settings'),
+                onSettings: () => context.go('/app/profile/settings'),
                 onLogout: () => _signOut(context),
                 notificationsCount: 3,
               ),
@@ -192,7 +195,7 @@ class _ProfileHeaderCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              user.fullName.isEmpty ? 'Profile' : user.fullName,
+              user.fullName,
               style: textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),

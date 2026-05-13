@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ride_link/features/profile/chnage_password.dart';
+import 'package:ride_link/features/profile/settings_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // ← AJOUT
@@ -18,7 +20,7 @@ import 'features/onboarding/onboarding_screen.dart';
 import 'theme/ride_link_theme.dart';
 import 'features/cities/presentation/screens/city_picker_screen.dart';   // ← AJOUT
 import 'features/vehicles/presentation/screens/vehicles_screen.dart';     // ← AJOUT
-
+ 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
@@ -111,6 +113,17 @@ class RideLinkApp extends StatelessWidget {
               GoRoute(
                 path: '/app/profile',
                 builder: (context, state) => const ProfileScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'settings',
+                    builder: (context, state) => const SettingsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'change-password',
+                    builder: (context, state) =>
+                        const ChangePasswordScreen(),
+                  ),
+                ],
               ),
             ]),
           ],
@@ -124,7 +137,7 @@ class RideLinkApp extends StatelessWidget {
         GoRoute(                                                           // ← AJOUT
           path: '/app/vehicles',                                           // ← AJOUT
           builder: (context, state) => const VehiclesScreen(),            // ← AJOUT
-        ),                                                                 // ← AJOUT
+        ), 
       ],
     );
   }
