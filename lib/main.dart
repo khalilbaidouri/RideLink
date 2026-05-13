@@ -186,7 +186,10 @@ class RideLinkApp extends StatelessWidget {
                 routes: [
                   GoRoute(
                     path: 'settings',
-                    builder: (context, state) => const SettingsScreen(),
+                    builder: (context, state) => const SettingsScreen(
+                      changePasswordPath:
+                          '/passenger/profile/change-password',
+                    ),
                   ),
                   GoRoute(
                     path: 'change-password',
@@ -225,7 +228,16 @@ class RideLinkApp extends StatelessWidget {
             StatefulShellBranch(routes: [
               GoRoute(
                 path: '/driver/settings',
-                builder: (context, state) => const SettingsScreen(),
+                builder: (context, state) => const SettingsScreen(
+                  changePasswordPath: '/driver/settings/change-password',
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'change-password',
+                    builder: (context, state) =>
+                        const ChangePasswordScreen(),
+                  ),
+                ],
               ),
             ]),
           ],

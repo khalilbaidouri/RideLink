@@ -4,7 +4,12 @@ import 'package:ride_link/features/profile/profile_navbar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({
+    super.key,
+    required this.changePasswordPath,
+  });
+
+  final String changePasswordPath;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +42,7 @@ class SettingsScreen extends StatelessWidget {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   child: InkWell(
-                    onTap: () => context.push('/app/profile/change-password'),
+                    onTap: () => context.push(changePasswordPath),
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
                       width: double.infinity,

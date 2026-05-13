@@ -100,7 +100,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 onRides: () => _showMenuSnack(context, 'My Rides'),
                 onNotifications:
                     () => _showMenuSnack(context, 'Notifications'),
-                onSettings: () => context.go('/app/profile/settings'),
+                onSettings: () => context.go('/passenger/profile/settings'),
                 onLogout: () => _signOut(context),
                 notificationsCount: 3,
               ),
