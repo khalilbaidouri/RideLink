@@ -6,7 +6,7 @@ import 'package:ride_link/features/profile/chnage_password.dart';
 import 'package:ride_link/features/profile/settings_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // ← AJOUT
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'features/auth/forgot_password.dart';
 import 'features/auth/login.dart';
 import 'features/auth/reset_email_sent.dart';
@@ -62,6 +62,11 @@ const List<NavigationDestination> _driverDestinations = [
     label: 'Activity',
   ),
   NavigationDestination(
+    // ← placeholder central pour le FAB
+    icon: SizedBox.shrink(),
+    label: '',
+  ),
+  NavigationDestination(
     icon: Icon(Icons.notifications_outlined),
     selectedIcon: Icon(Icons.notifications),
     label: 'Alerts',
@@ -80,7 +85,7 @@ Future<void> main() async {
     url: dotenv.env['SUPABASE_URL'] ?? '',
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
   );
-  runApp(ProviderScope(child: RideLinkApp())); // ← MODIFIÉ
+  runApp(ProviderScope(child: RideLinkApp()));
 }
 
 class RideLinkApp extends StatelessWidget {
@@ -139,7 +144,10 @@ class RideLinkApp extends StatelessWidget {
           path: '/onboarding',
           builder: (context, state) => const OnboardingScreen(),
         ),
-        GoRoute(path: '/login', builder: (context, state) => const Login()),
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => const Login(),
+        ),
         GoRoute(
           path: '/forgot-password',
           builder: (context, state) => const ForgotPasswordScreen(),
@@ -155,6 +163,8 @@ class RideLinkApp extends StatelessWidget {
           path: '/signup',
           builder: (context, state) => const SignupScreen(),
         ),
+
+        // ─── PASSENGER SHELL ───────────────────────────────────────────
         StatefulShellRoute.indexedStack(
           builder: (context, state, navigationShell) => AppShell(
             navigationShell: navigationShell,
@@ -201,10 +211,15 @@ class RideLinkApp extends StatelessWidget {
             ]),
           ],
         ),
+
+        // ─── DRIVER SHELL ──────────────────────────────────────────────
         StatefulShellRoute.indexedStack(
           builder: (context, state, navigationShell) => AppShell(
             navigationShell: navigationShell,
             destinations: _driverDestinations,
+            showAddButton: true, // ← AJOUT
+            onAddButtonPressed: () => // ← AJOUT
+                context.push('/driver/route-details'), // ← AJOUT
           ),
           branches: [
             StatefulShellBranch(routes: [
@@ -217,6 +232,13 @@ class RideLinkApp extends StatelessWidget {
               GoRoute(
                 path: '/driver/activity',
                 builder: (context, state) => const ActivityScreen(),
+              ),
+            ]),
+            StatefulShellBranch(routes: [
+              // ← placeholder branch pour index 2
+              GoRoute(
+                path: '/driver/new-route',
+                builder: (context, state) => const RouteDetailsScreen(),
               ),
             ]),
             StatefulShellBranch(routes: [
@@ -242,19 +264,23 @@ class RideLinkApp extends StatelessWidget {
             ]),
           ],
         ),
+
+        // ─── ROUTES STANDALONE ─────────────────────────────────────────
         GoRoute(
-          // ← AJOUT
-          path: '/passenger/cities', // ← AJOUT
+          path: '/driver/route-details', // ← AJOUT
+          builder: (context, state) => // ← AJOUT
+              const RouteDetailsScreen(), // ← AJOUT
+        ),
+        GoRoute(
+          path: '/passenger/cities',
           builder: (context, state) => const CityPickerScreen(
-            // ← AJOUT
-            title: 'Choisir une ville', // ← AJOUT
-          ), // ← AJOUT
-        ), // ← AJOUT
+            title: 'Choisir une ville',
+          ),
+        ),
         GoRoute(
-          // ← AJOUT
-          path: '/passenger/vehicles', // ← AJOUT
-          builder: (context, state) => const VehiclesScreen(), // ← AJOUT
-        ), // ← AJOUT
+          path: '/passenger/vehicles',
+          builder: (context, state) => const VehiclesScreen(),
+        ),
       ],
     );
   }
