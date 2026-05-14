@@ -15,7 +15,7 @@ import 'package:ride_link/features/home/home_screen.dart';
 import 'package:ride_link/features/home/messages_screen.dart';
 import 'package:ride_link/features/home/profile_screen.dart';
 import 'package:ride_link/features/home/rides_screen.dart';
-import 'package:ride_link/features/navigation/app_shell.dart';
+import 'package:ride_link/core/router/app_shell.dart';
 import 'package:ride_link/features/onboarding/onboarding_screen.dart';
 import 'package:ride_link/features/vehicles/presentation/screens/vehicles_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
