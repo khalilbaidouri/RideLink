@@ -13,17 +13,21 @@ import 'features/home/home_screen.dart';
 import 'features/home/messages_screen.dart';
 import 'features/home/profile_screen.dart';
 import 'features/home/rides_screen.dart';
-import 'features/navigation/app_shell.dart';
+// import 'features/navigation/app_shell.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/driver/activity_screen.dart';
 import 'features/driver/alerts_screen.dart';
 import 'features/driver/dashboard_screen.dart';
-import 'theme/ride_link_theme.dart';
+// import 'theme/ride_link_theme.dart';
 import 'features/cities/presentation/screens/city_picker_screen.dart';   // ← AJOUT
 import 'features/vehicles/presentation/screens/vehicles_screen.dart';     // ← AJOUT
- 
 import 'features/cities/presentation/screens/city_picker_screen.dart'; // ← AJOUT
 import 'features/vehicles/presentation/screens/vehicles_screen.dart'; // ← AJOUT
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ride_link/core/router/app_router.dart';
+import 'package:ride_link/core/theme/ride_link_theme.dart';
 
 const List<NavigationDestination> _passengerDestinations = [
   NavigationDestination(
@@ -75,11 +79,7 @@ const List<NavigationDestination> _driverDestinations = [
     label: 'Settings',
   ),
 ];
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ride_link/core/router/app_router.dart';
-import 'package:ride_link/core/theme/ride_link_theme.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -88,7 +88,7 @@ Future<void> main() async {
     url: dotenv.env['SUPABASE_URL'] ?? '',
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
   );
-  runApp(const ProviderScope(child: RideLinkApp())); // ← MODIFIÉ
+  runApp(ProviderScope(child: RideLinkApp())); // ← MODIFIÉ
 }
 
 class RideLinkApp extends StatelessWidget {
