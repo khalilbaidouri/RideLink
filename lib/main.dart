@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ride_link/features/profile/chnage_password.dart';
@@ -77,6 +75,11 @@ const List<NavigationDestination> _driverDestinations = [
     label: 'Settings',
   ),
 ];
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ride_link/core/router/app_router.dart';
+import 'package:ride_link/core/theme/ride_link_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -85,7 +88,7 @@ Future<void> main() async {
     url: dotenv.env['SUPABASE_URL'] ?? '',
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
   );
-  runApp(ProviderScope(child: RideLinkApp()));
+  runApp(const ProviderScope(child: RideLinkApp())); // ← MODIFIÉ
 }
 
 class RideLinkApp extends StatelessWidget {
@@ -292,73 +295,7 @@ class RideLinkApp extends StatelessWidget {
       title: 'RideLink',
       theme: RideLinkTheme.light,
       themeMode: ThemeMode.light,
-      routerConfig: _router,
+      routerConfig: appRouter,
     );
   }
-}
-
-class _GoRouterRefreshStream extends ChangeNotifier {
-  _GoRouterRefreshStream(Stream<dynamic> stream) {
-    _subscription = stream.listen((_) => notifyListeners());
-  }
-
-  late final StreamSubscription<dynamic> _subscription;
-
-  @override
-  void dispose() {
-    _subscription.cancel();
-    super.dispose();
-  }
-}
-
-class _RoleCache {
-  String? _cachedRole;
-  Future<String>? _inFlight;
-
-  Future<String> getRole(SupabaseClient client) {
-    if (_cachedRole != null) {
-      return Future.value(_cachedRole);
-    }
-
-    if (_inFlight != null) {
-      return _inFlight!;
-    }
-
-    _inFlight = _loadRole(client);
-    return _inFlight!;
-  }
-
-  void reset() {
-    _cachedRole = null;
-    _inFlight = null;
-  }
-
-  Future<String> _loadRole(SupabaseClient client) async {
-    try {
-      final user = client.auth.currentUser;
-      if (user == null) {
-        _cachedRole = 'PASSENGER';
-        return _cachedRole!;
-      }
-
-      final data = await client
-          .from('users')
-          .select('role')
-          .eq('id', user.id)
-          .maybeSingle();
-
-      final role = (data?['role'] as String?)?.toUpperCase() ?? 'PASSENGER';
-      _cachedRole = role;
-      return role;
-    } catch (_) {
-      _cachedRole = 'PASSENGER';
-      return _cachedRole!;
-    } finally {
-      _inFlight = null;
-    }
-  }
-}
-
-bool _isDriverRole(String role) {
-  return role == 'DRIVER' || role == 'BOTH';
 }
