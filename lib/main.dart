@@ -221,7 +221,7 @@ class RideLinkApp extends StatelessWidget {
               // ← placeholder branch pour index 2
               GoRoute(
                 path: '/driver/new-route',
-                builder: (context, state) => const RouteDetailsScreen(),
+                builder: (context, state) => RouteDetailsScreen(),
               ),
             ]),
             StatefulShellBranch(routes: [
@@ -243,7 +243,7 @@ class RideLinkApp extends StatelessWidget {
         GoRoute(
           path: '/driver/route-details', // ← AJOUT
           builder: (context, state) => // ← AJOUT
-              const RouteDetailsScreen(), // ← AJOUT
+              RouteDetailsScreen(), // ← AJOUT
         ),
         GoRoute(
           path: '/passenger/cities',
