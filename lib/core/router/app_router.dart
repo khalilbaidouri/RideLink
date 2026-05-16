@@ -11,7 +11,8 @@ import 'package:ride_link/features/driver/activity_screen.dart';
 import 'package:ride_link/features/driver/alerts_screen.dart';
 import 'package:ride_link/features/driver/dashboard_screen.dart';
 import 'package:ride_link/features/driver/settings_screen.dart';
-import 'package:ride_link/features/passenger/screens/home_screen.dart';
+import 'package:ride_link/features/passenger/screens/home_screen.dart'
+    hide HomeScreen;
 import 'package:ride_link/features/profile/change_password.dart';
 import 'package:ride_link/features/profile/settings_screen.dart';
 import 'package:ride_link/features/home/home_screen.dart';
@@ -183,8 +184,7 @@ GoRouter _createRouter() {
                 GoRoute(
                   path: 'settings',
                   builder: (context, state) => const SettingsScreen(
-                    changePasswordPath:
-                        '/passenger/profile/change-password',
+                    changePasswordPath: '/passenger/profile/change-password',
                   ),
                 ),
                 GoRoute(
