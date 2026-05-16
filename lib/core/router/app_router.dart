@@ -10,12 +10,10 @@ import 'package:ride_link/features/cities/presentation/screens/city_picker_scree
 import 'package:ride_link/features/driver/activity_screen.dart';
 import 'package:ride_link/features/driver/alerts_screen.dart';
 import 'package:ride_link/features/driver/dashboard_screen.dart';
-import 'package:ride_link/features/driver/settings_screen.dart';
-import 'package:ride_link/features/passenger/screens/home_screen.dart'
-    hide HomeScreen;
+import 'package:ride_link/features/passenger/screens/home_screen.dart';
+
 import 'package:ride_link/features/profile/change_password.dart';
 import 'package:ride_link/features/profile/settings_screen.dart';
-import 'package:ride_link/features/home/home_screen.dart';
 import 'package:ride_link/features/home/messages_screen.dart';
 import 'package:ride_link/features/home/profile_screen.dart';
 import 'package:ride_link/features/home/rides_screen.dart';
