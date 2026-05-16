@@ -10,7 +10,8 @@ import 'package:ride_link/features/cities/presentation/screens/city_picker_scree
 import 'package:ride_link/features/driver/activity_screen.dart';
 import 'package:ride_link/features/driver/alerts_screen.dart';
 import 'package:ride_link/features/driver/dashboard_screen.dart';
-import 'package:ride_link/features/driver/settings_screen.dart';
+import 'package:ride_link/features/profile/change_password.dart';
+import 'package:ride_link/features/profile/settings_screen.dart';
 import 'package:ride_link/features/home/home_screen.dart';
 import 'package:ride_link/features/home/messages_screen.dart';
 import 'package:ride_link/features/home/profile_screen.dart';
@@ -163,6 +164,19 @@ GoRouter _createRouter() {
             GoRoute(
               path: '/passenger/profile',
               builder: (context, state) => const ProfileScreen(),
+              routes: [
+                GoRoute(
+                  path: 'settings',
+                  builder: (context, state) => const SettingsScreen(
+                    changePasswordPath:
+                        '/passenger/profile/change-password',
+                  ),
+                ),
+                GoRoute(
+                  path: 'change-password',
+                  builder: (context, state) => const ChangePasswordScreen(),
+                ),
+              ],
             ),
           ]),
         ],
@@ -173,12 +187,12 @@ GoRouter _createRouter() {
           destinations: _driverDestinations,
         ),
         branches: [
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: '/driver/dashboard',
-              builder: (context, state) => const DashboardScreen(),
-            ),
-          ]),
+          // StatefulShellBranch(routes: [
+          //   GoRoute(
+          //     path: '/driver/dashboard',
+          //     builder: (context, state) => const DashboardScreen(),
+          //   ),
+          // ]),
           StatefulShellBranch(routes: [
             GoRoute(
               path: '/driver/activity',
@@ -194,7 +208,15 @@ GoRouter _createRouter() {
           StatefulShellBranch(routes: [
             GoRoute(
               path: '/driver/settings',
-              builder: (context, state) => const SettingsScreen(),
+              builder: (context, state) => const SettingsScreen(
+                changePasswordPath: '/driver/settings/change-password',
+              ),
+              routes: [
+                GoRoute(
+                  path: 'change-password',
+                  builder: (context, state) => const ChangePasswordScreen(),
+                ),
+              ],
             ),
           ]),
         ],

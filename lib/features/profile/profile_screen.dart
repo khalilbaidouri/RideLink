@@ -87,19 +87,14 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 vehicles: vehicles,
                 errorMessage: vehiclesState.error,
                 onAddPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Add vehicle link tapped'),
-                    ),
-                  );
+                  context.push('/passenger/vehicles');
                 },
               ),
               const SizedBox(height: 18),
               _ProfileMenuCard(
-                onBookings: () => _showMenuSnack(context, 'My Bookings'),
-                onRides: () => _showMenuSnack(context, 'My Rides'),
-                onNotifications:
-                    () => _showMenuSnack(context, 'Notifications'),
+                onBookings: () => context.go('/passenger/rides'),
+                onRides: () => context.go('/passenger/rides'),
+                onNotifications: () => context.go('/passenger/messages'),
                 onSettings: () => context.go('/passenger/profile/settings'),
                 onLogout: () => _signOut(context),
                 notificationsCount: 3,
