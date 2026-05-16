@@ -10,6 +10,8 @@ import 'package:ride_link/features/cities/presentation/screens/city_picker_scree
 import 'package:ride_link/features/driver/activity_screen.dart';
 import 'package:ride_link/features/driver/alerts_screen.dart';
 import 'package:ride_link/features/driver/dashboard_screen.dart';
+import 'package:ride_link/features/driver/settings_screen.dart';
+import 'package:ride_link/features/passenger/screens/home_screen.dart';
 import 'package:ride_link/features/profile/change_password.dart';
 import 'package:ride_link/features/profile/settings_screen.dart';
 import 'package:ride_link/features/home/home_screen.dart';
@@ -18,6 +20,8 @@ import 'package:ride_link/features/home/profile_screen.dart';
 import 'package:ride_link/features/home/rides_screen.dart';
 import 'package:ride_link/core/router/app_shell.dart';
 import 'package:ride_link/features/onboarding/onboarding_screen.dart';
+import 'package:ride_link/features/passenger/screens/search_screen.dart';
+import 'package:ride_link/features/passenger/screens/notifications_screen.dart';
 import 'package:ride_link/features/vehicles/presentation/screens/vehicles_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -33,6 +37,11 @@ const List<NavigationDestination> _passengerDestinations = [
     icon: Icon(Icons.route_outlined),
     selectedIcon: Icon(Icons.route),
     label: 'Rides',
+  ),
+  NavigationDestination(
+    icon: Icon(Icons.notifications_outlined),
+    selectedIcon: Icon(Icons.notifications),
+    label: 'Alerts',
   ),
   NavigationDestination(
     icon: Icon(Icons.chat_bubble_outline),
@@ -156,6 +165,12 @@ GoRouter _createRouter() {
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
+              path: '/passenger/notifications',
+              builder: (context, state) => const NotificationsScreen(),
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
               path: '/passenger/messages',
               builder: (context, state) => const MessagesScreen(),
             ),
@@ -230,6 +245,10 @@ GoRouter _createRouter() {
       GoRoute(
         path: '/passenger/vehicles',
         builder: (context, state) => const VehiclesScreen(),
+      ),
+      GoRoute(
+        path: '/passenger/search',
+        builder: (context, state) => const SearchScreen(),
       ),
     ],
   );
