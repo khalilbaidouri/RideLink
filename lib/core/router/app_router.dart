@@ -187,12 +187,12 @@ GoRouter _createRouter() {
           destinations: _driverDestinations,
         ),
         branches: [
-          // StatefulShellBranch(routes: [
-          //   GoRoute(
-          //     path: '/driver/dashboard',
-          //     builder: (context, state) => const DashboardScreen(),
-          //   ),
-          // ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: '/driver/dashboard',
+              builder: (context, state) => const DashboardScreen(),
+            ),
+          ]),
           StatefulShellBranch(routes: [
             GoRoute(
               path: '/driver/activity',
