@@ -1,3 +1,4 @@
 {
-    "dart.mcpServer": true
+    "dart.mcpServer": true,
+    "cmake.sourceDirectory": "C:/Users/sadik/OneDrive/Desktop/RideLink/RideLink/linux"
 }
