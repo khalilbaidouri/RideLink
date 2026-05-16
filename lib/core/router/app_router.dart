@@ -12,6 +12,9 @@ import 'package:ride_link/features/driver/alerts_screen.dart';
 import 'package:ride_link/features/driver/dashboard_screen.dart';
 import 'package:ride_link/features/driver/settings_screen.dart';
 import 'package:ride_link/features/passenger/screens/home_screen.dart';
+import 'package:ride_link/features/profile/change_password.dart';
+import 'package:ride_link/features/profile/settings_screen.dart';
+import 'package:ride_link/features/home/home_screen.dart';
 import 'package:ride_link/features/home/messages_screen.dart';
 import 'package:ride_link/features/home/profile_screen.dart';
 import 'package:ride_link/features/home/rides_screen.dart';
@@ -176,6 +179,19 @@ GoRouter _createRouter() {
             GoRoute(
               path: '/passenger/profile',
               builder: (context, state) => const ProfileScreen(),
+              routes: [
+                GoRoute(
+                  path: 'settings',
+                  builder: (context, state) => const SettingsScreen(
+                    changePasswordPath:
+                        '/passenger/profile/change-password',
+                  ),
+                ),
+                GoRoute(
+                  path: 'change-password',
+                  builder: (context, state) => const ChangePasswordScreen(),
+                ),
+              ],
             ),
           ]),
         ],
@@ -207,7 +223,15 @@ GoRouter _createRouter() {
           StatefulShellBranch(routes: [
             GoRoute(
               path: '/driver/settings',
-              builder: (context, state) => const SettingsScreen(),
+              builder: (context, state) => const SettingsScreen(
+                changePasswordPath: '/driver/settings/change-password',
+              ),
+              routes: [
+                GoRoute(
+                  path: 'change-password',
+                  builder: (context, state) => const ChangePasswordScreen(),
+                ),
+              ],
             ),
           ]),
         ],

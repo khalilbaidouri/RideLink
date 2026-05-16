@@ -1,14 +1,729 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ride_link/features/driver/providers/driver_dashboard_provider.dart';
 
-class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('Dashboard'),
-      ),
-    );
-  }
+class DashboardScreen extends ConsumerWidget {
+	const DashboardScreen({super.key});
+
+	@override
+	Widget build(BuildContext context, WidgetRef ref) {
+		final statsAsync = ref.watch(driverDashboardProvider);
+		final colors = Theme.of(context).colorScheme;
+
+		return Scaffold(
+			body: SafeArea(
+				child: Padding(
+					padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+					child: statsAsync.when(
+						data: (stats) => _DashboardBody(stats: stats),
+						loading: () => const Center(child: CircularProgressIndicator()),
+						error: (error, _) => Center(
+							child: Text(
+								'Unable to load dashboard',
+								style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+											color: colors.error,
+										),
+							),
+						),
+					),
+				),
+			),
+		);
+	}
+}
+
+class _DashboardBody extends StatelessWidget {
+	const _DashboardBody({required this.stats});
+
+	final DriverDashboardStats stats;
+
+	@override
+	Widget build(BuildContext context) {
+		final greeting = _greetingText(DateTime.now());
+
+		return SingleChildScrollView(
+			child: Column(
+				crossAxisAlignment: CrossAxisAlignment.start,
+				children: [
+					Text(
+						'$greeting, ${stats.name}',
+						style: Theme.of(context).textTheme.headlineSmall,
+					),
+					const SizedBox(height: 4),
+					Text(
+						"Here's your performance snapshot for today.",
+						style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+									color: Theme.of(context).colorScheme.onSurfaceVariant,
+								),
+					),
+					const SizedBox(height: 20),
+					_StatCard(
+						icon: Icons.directions_car_filled_outlined,
+						label: 'Total rides',
+						value: _formatNumber(stats.totalRides),
+						trendPercent: stats.weeklyChangePercent,
+						accentColor: Theme.of(context).colorScheme.primary,
+					),
+					const SizedBox(height: 14),
+					_EarningsCard(
+						amount: stats.totalEarnings,
+						periodLabel: 'Weekly',
+					),
+					const SizedBox(height: 14),
+					_RatingCard(
+						rating: stats.averageRating,
+						totalReviews: stats.totalReviews,
+						badgeLabel: _partnerLabel(stats.averageRating, stats.totalReviews),
+					),
+					const SizedBox(height: 20),
+					const _RouteInsightsSection(),
+					const SizedBox(height: 14),
+					_EarningsTargetCard(
+						earnedAmount: stats.totalEarnings,
+						targetAmount: 200,
+					),
+					const SizedBox(height: 24),
+					_RecentActivitySection(activities: stats.activities),
+				],
+			),
+		);
+	}
+}
+
+class _RouteInsightsSection extends StatelessWidget {
+	const _RouteInsightsSection();
+
+	@override
+	Widget build(BuildContext context) {
+		final colors = Theme.of(context).colorScheme;
+		final textTheme = Theme.of(context).textTheme;
+
+		return Column(
+			crossAxisAlignment: CrossAxisAlignment.start,
+			children: [
+				Text('Route insights', style: textTheme.headlineSmall),
+				const SizedBox(height: 10),
+				Container(
+					padding: const EdgeInsets.all(16),
+					decoration: BoxDecoration(
+						color: colors.primary,
+						borderRadius: BorderRadius.circular(18),
+						boxShadow: [
+							BoxShadow(
+								color: colors.shadow.withValues(alpha: 0.12),
+								blurRadius: 18,
+								offset: const Offset(0, 8),
+							),
+						],
+					),
+					child: Column(
+						crossAxisAlignment: CrossAxisAlignment.start,
+						children: [
+							Row(
+								children: [
+									Container(
+										width: 44,
+										height: 44,
+										decoration: BoxDecoration(
+											color: colors.onPrimary.withValues(alpha: 0.14),
+											borderRadius: BorderRadius.circular(14),
+										),
+										child: Icon(
+											Icons.alt_route_rounded,
+											color: colors.onPrimary,
+										),
+									),
+									const SizedBox(width: 12),
+									Expanded(
+										child: RichText(
+											text: TextSpan(
+												style: textTheme.titleMedium?.copyWith(
+													color: colors.onPrimary,
+													fontWeight: FontWeight.w700,
+												),
+												children: const [
+													TextSpan(text: 'High '),
+													TextSpan(
+														text: 'Demand',
+														style: TextStyle(decoration: TextDecoration.underline),
+													),
+													TextSpan(text: ' Area'),
+												],
+											),
+										),
+									),
+								],
+							),
+							const SizedBox(height: 8),
+							Text(
+								'The Central Business District is seeing 2.4x more ride requests than usual.',
+								style: textTheme.bodyMedium?.copyWith(
+									color: colors.onPrimary.withValues(alpha: 0.9),
+								),
+							),
+							const SizedBox(height: 12),
+							FilledButton(
+								onPressed: () {},
+								style: FilledButton.styleFrom(
+									backgroundColor: colors.onPrimary,
+									foregroundColor: colors.primary,
+								),
+								child: const Text('Go to Hotspot'),
+							),
+						],
+					),
+				),
+			],
+		);
+	}
+}
+
+class _EarningsTargetCard extends StatelessWidget {
+	const _EarningsTargetCard({
+		required this.earnedAmount,
+		required this.targetAmount,
+	});
+
+	final double earnedAmount;
+	final double targetAmount;
+
+	@override
+	Widget build(BuildContext context) {
+		final colors = Theme.of(context).colorScheme;
+		final textTheme = Theme.of(context).textTheme;
+		final progress = targetAmount <= 0
+				? 0.0
+				: (earnedAmount / targetAmount).clamp(0.0, 1.0).toDouble();
+		final earnedText = _formatCurrency(earnedAmount);
+		final targetText = _formatCurrency(targetAmount);
+
+		return Card(
+			child: Padding(
+				padding: const EdgeInsets.all(16),
+				child: Column(
+					crossAxisAlignment: CrossAxisAlignment.start,
+					children: [
+						Text(
+							"Today's earnings target",
+							style: textTheme.labelLarge?.copyWith(
+								color: colors.onSurfaceVariant,
+							),
+						),
+						const SizedBox(height: 10),
+						ClipRRect(
+							borderRadius: BorderRadius.circular(999),
+							child: LinearProgressIndicator(
+								value: progress,
+								minHeight: 10,
+								backgroundColor: colors.surfaceContainerHighest,
+								color: colors.primary,
+							),
+						),
+						const SizedBox(height: 8),
+						Row(
+							mainAxisAlignment: MainAxisAlignment.spaceBetween,
+							children: [
+								Text(
+									'$earnedText earned',
+									style: textTheme.labelMedium?.copyWith(
+										color: colors.onSurfaceVariant,
+									),
+								),
+								Text(
+									targetText,
+									style: textTheme.labelLarge?.copyWith(
+										fontWeight: FontWeight.w700,
+									),
+								),
+							],
+						),
+					],
+				),
+			),
+		);
+	}
+}
+
+class _RecentActivitySection extends StatelessWidget {
+	const _RecentActivitySection({required this.activities});
+
+	final List<DriverActivityItem> activities;
+
+	@override
+	Widget build(BuildContext context) {
+		final colors = Theme.of(context).colorScheme;
+		final textTheme = Theme.of(context).textTheme;
+
+		return Column(
+			crossAxisAlignment: CrossAxisAlignment.start,
+			children: [
+				Row(
+					mainAxisAlignment: MainAxisAlignment.spaceBetween,
+					children: [
+						Text('Recent activity', style: textTheme.headlineSmall),
+						TextButton(
+							onPressed: () {},
+							child: const Text('View All'),
+						),
+					],
+				),
+				if (activities.isEmpty)
+					Container(
+						width: double.infinity,
+						padding: const EdgeInsets.all(16),
+						decoration: BoxDecoration(
+							color: colors.surfaceContainerHighest,
+							borderRadius: BorderRadius.circular(18),
+						),
+						child: Text(
+							'No activity yet. Your latest trips and feedback will show here.',
+							style: textTheme.bodyMedium?.copyWith(
+								color: colors.onSurfaceVariant,
+							),
+						),
+					)
+				else
+					Column(
+						children: activities
+								.map((activity) => _ActivityTile(activity: activity))
+								.toList(),
+					),
+			],
+		);
+	}
+}
+
+class _ActivityTile extends StatelessWidget {
+	const _ActivityTile({required this.activity});
+
+	final DriverActivityItem activity;
+
+	@override
+	Widget build(BuildContext context) {
+		final colors = Theme.of(context).colorScheme;
+		final textTheme = Theme.of(context).textTheme;
+		final iconData = _activityIcon(activity.kind);
+		final accentColor = _activityColor(context, activity.kind);
+
+		return Container(
+			margin: const EdgeInsets.only(bottom: 12),
+			padding: const EdgeInsets.all(14),
+			decoration: BoxDecoration(
+				color: colors.surface,
+				borderRadius: BorderRadius.circular(20),
+				boxShadow: [
+					BoxShadow(
+						color: colors.shadow.withValues(alpha: 0.06),
+						blurRadius: 16,
+						offset: const Offset(0, 6),
+					),
+				],
+			),
+			child: Row(
+				crossAxisAlignment: CrossAxisAlignment.start,
+				children: [
+					Container(
+						width: 42,
+						height: 42,
+						decoration: BoxDecoration(
+							color: accentColor.withValues(alpha: 0.15),
+							borderRadius: BorderRadius.circular(14),
+						),
+						child: Icon(iconData, color: accentColor, size: 20),
+					),
+					const SizedBox(width: 12),
+					Expanded(
+						child: Column(
+							crossAxisAlignment: CrossAxisAlignment.start,
+							children: [
+								Text(
+									activity.title,
+									style: textTheme.labelLarge?.copyWith(
+										fontWeight: FontWeight.w700,
+									),
+								),
+								const SizedBox(height: 4),
+								Text(
+									activity.subtitle,
+									style: textTheme.labelMedium?.copyWith(
+										color: colors.onSurfaceVariant,
+									),
+								),
+							],
+						),
+					),
+					const SizedBox(width: 12),
+					Column(
+						crossAxisAlignment: CrossAxisAlignment.end,
+						children: [
+							if (activity.amountText != null)
+								Text(
+									activity.amountText!,
+									style: textTheme.labelLarge?.copyWith(
+										fontWeight: FontWeight.w700,
+									),
+								),
+							if (activity.rating != null)
+								Row(
+									children: List.generate(5, (index) {
+										return Icon(
+											Icons.star,
+											size: 14,
+											color: index < activity.rating!.round().clamp(0, 5)
+												? colors.secondary
+												: colors.outlineVariant,
+										);
+									}),
+								),
+							if (activity.badgeText != null) ...[
+								const SizedBox(height: 6),
+								Container(
+									padding:
+										const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+									decoration: BoxDecoration(
+										color: _badgeColor(context, activity.kind)
+											.withValues(alpha: 0.2),
+										borderRadius: BorderRadius.circular(999),
+									),
+									child: Text(
+										activity.badgeText!,
+										style: textTheme.labelMedium?.copyWith(
+											color: _badgeColor(context, activity.kind),
+											fontWeight: FontWeight.w700,
+										),
+									),
+								),
+							],
+						],
+					),
+				],
+			),
+		);
+	}
+}
+
+IconData _activityIcon(DriverActivityKind kind) {
+	switch (kind) {
+		case DriverActivityKind.rideCompleted:
+			return Icons.alt_route_rounded;
+		case DriverActivityKind.payout:
+			return Icons.account_balance_wallet_outlined;
+		case DriverActivityKind.feedback:
+			return Icons.star_rounded;
+	}
+}
+
+Color _activityColor(BuildContext context, DriverActivityKind kind) {
+	final colors = Theme.of(context).colorScheme;
+	switch (kind) {
+		case DriverActivityKind.rideCompleted:
+			return colors.primary;
+		case DriverActivityKind.payout:
+			return colors.secondary;
+		case DriverActivityKind.feedback:
+			return colors.tertiary;
+	}
+}
+
+Color _badgeColor(BuildContext context, DriverActivityKind kind) {
+	final colors = Theme.of(context).colorScheme;
+	switch (kind) {
+		case DriverActivityKind.rideCompleted:
+			return colors.primary;
+		case DriverActivityKind.payout:
+			return colors.secondary;
+		case DriverActivityKind.feedback:
+			return colors.tertiary;
+	}
+}
+
+class _StatCard extends StatelessWidget {
+	const _StatCard({
+		required this.icon,
+		required this.label,
+		required this.value,
+		required this.trendPercent,
+		required this.accentColor,
+	});
+
+	final IconData icon;
+	final String label;
+	final String value;
+	final double trendPercent;
+	final Color accentColor;
+
+	@override
+	Widget build(BuildContext context) {
+		final colors = Theme.of(context).colorScheme;
+		final trendPositive = trendPercent >= 0;
+
+		return Card(
+			child: Padding(
+				padding: const EdgeInsets.all(16),
+				child: Row(
+					children: [
+						Container(
+							width: 48,
+							height: 48,
+							decoration: BoxDecoration(
+								color: accentColor.withValues(alpha: 0.12),
+								borderRadius: BorderRadius.circular(16),
+							),
+							child: Icon(icon, color: accentColor),
+						),
+						const SizedBox(width: 14),
+						Expanded(
+							child: Column(
+								crossAxisAlignment: CrossAxisAlignment.start,
+								children: [
+									Text(
+										label.toUpperCase(),
+										style: Theme.of(context).textTheme.labelMedium?.copyWith(
+													color: colors.onSurfaceVariant,
+													letterSpacing: 0.6,
+												),
+									),
+									const SizedBox(height: 6),
+									Text(
+										value,
+										style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+													fontWeight: FontWeight.w700,
+												),
+									),
+								],
+							),
+						),
+						Container(
+							padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+							decoration: BoxDecoration(
+								color: trendPositive
+										? colors.secondaryContainer
+										: colors.errorContainer,
+								borderRadius: BorderRadius.circular(999),
+							),
+							child: Text(
+								'${trendPositive ? '+' : ''}${trendPercent.toStringAsFixed(0)}%',
+								style: Theme.of(context).textTheme.labelMedium?.copyWith(
+											color: trendPositive
+													? colors.onSecondaryContainer
+													: colors.onErrorContainer,
+											fontWeight: FontWeight.w700,
+										),
+							),
+						),
+					],
+				),
+			),
+		);
+	}
+}
+
+class _EarningsCard extends StatelessWidget {
+	const _EarningsCard({
+		required this.amount,
+		required this.periodLabel,
+	});
+
+	final double amount;
+	final String periodLabel;
+
+	@override
+	Widget build(BuildContext context) {
+		final colors = Theme.of(context).colorScheme;
+		final formatted = _formatCurrency(amount);
+
+		return Card(
+			shape: RoundedRectangleBorder(
+				borderRadius: BorderRadius.circular(18),
+				side: BorderSide(
+					color: colors.secondaryContainer,
+					width: 1.4,
+				),
+			),
+			child: Padding(
+				padding: const EdgeInsets.all(16),
+				child: Row(
+					children: [
+						Container(
+							width: 48,
+							height: 48,
+							decoration: BoxDecoration(
+								color: colors.secondaryContainer.withValues(alpha: 0.45),
+								borderRadius: BorderRadius.circular(16),
+							),
+							child: Icon(Icons.account_balance_wallet_outlined,
+									color: colors.onSecondaryContainer),
+						),
+						const SizedBox(width: 14),
+						Expanded(
+							child: Column(
+								crossAxisAlignment: CrossAxisAlignment.start,
+								children: [
+									Text(
+										'Total earnings'.toUpperCase(),
+										style: Theme.of(context).textTheme.labelMedium?.copyWith(
+													color: colors.onSurfaceVariant,
+													letterSpacing: 0.6,
+												),
+									),
+									const SizedBox(height: 6),
+									Text(
+										formatted,
+										style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+													fontWeight: FontWeight.w700,
+												),
+									),
+								],
+							),
+						),
+						Container(
+							padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+							decoration: BoxDecoration(
+								color: colors.secondaryContainer.withValues(alpha: 0.55),
+								borderRadius: BorderRadius.circular(999),
+							),
+							child: Text(
+								periodLabel,
+								style: Theme.of(context).textTheme.labelMedium?.copyWith(
+											color: colors.onSecondaryContainer,
+											fontWeight: FontWeight.w700,
+										),
+							),
+						),
+					],
+				),
+			),
+		);
+	}
+}
+
+class _RatingCard extends StatelessWidget {
+	const _RatingCard({
+		required this.rating,
+		required this.totalReviews,
+		required this.badgeLabel,
+	});
+
+	final double rating;
+	final int totalReviews;
+	final String badgeLabel;
+
+	@override
+	Widget build(BuildContext context) {
+		final colors = Theme.of(context).colorScheme;
+
+		return Card(
+			child: Padding(
+				padding: const EdgeInsets.all(16),
+				child: Row(
+					children: [
+						Container(
+							width: 48,
+							height: 48,
+							decoration: BoxDecoration(
+								color: colors.tertiaryContainer.withValues(alpha: 0.4),
+								borderRadius: BorderRadius.circular(16),
+							),
+							child: Icon(Icons.star_rounded,
+									color: colors.onTertiaryContainer),
+						),
+						const SizedBox(width: 14),
+						Expanded(
+							child: Column(
+								crossAxisAlignment: CrossAxisAlignment.start,
+								children: [
+									Text(
+										'Average rating'.toUpperCase(),
+										style: Theme.of(context)
+												.textTheme
+												.labelMedium
+												?.copyWith(
+													color: colors.onSurfaceVariant,
+													letterSpacing: 0.6,
+												),
+									),
+									const SizedBox(height: 6),
+									Row(
+										children: [
+											Text(
+												rating.toStringAsFixed(2),
+												style: Theme.of(context)
+														.textTheme
+														.headlineSmall
+														?.copyWith(fontWeight: FontWeight.w700),
+											),
+											const SizedBox(width: 6),
+											Text(
+												'/ 5',
+												style: Theme.of(context).textTheme.labelMedium,
+											),
+										],
+									),
+									if (totalReviews > 0) ...[
+										const SizedBox(height: 4),
+										Text(
+											'$totalReviews reviews',
+											style: Theme.of(context)
+													.textTheme
+													.labelMedium
+													?.copyWith(color: colors.onSurfaceVariant),
+										),
+									],
+								],
+							),
+						),
+						Container(
+							padding:
+									const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+							decoration: BoxDecoration(
+								color: colors.surfaceContainerHighest,
+								borderRadius: BorderRadius.circular(999),
+							),
+							child: Text(
+								badgeLabel,
+								style: Theme.of(context).textTheme.labelMedium?.copyWith(
+										fontWeight: FontWeight.w700,
+								),
+							),
+						),
+					],
+				),
+			),
+		);
+	}
+}
+
+String _greetingText(DateTime now) {
+	final hour = now.hour;
+	if (hour < 12) return 'Good morning';
+	if (hour < 17) return 'Good afternoon';
+	return 'Good evening';
+}
+
+String _formatNumber(int value) {
+	return value.toString().replaceAllMapped(
+		RegExp(r'\B(?=(\d{3})+(?!\d))'),
+		(match) => ',',
+	);
+}
+
+String _formatCurrency(double value) {
+	final rounded = value.toStringAsFixed(2);
+	final parts = rounded.split('.');
+	final whole = parts.first.replaceAllMapped(
+		RegExp(r'\B(?=(\d{3})+(?!\d))'),
+		(match) => ',',
+	);
+	return '\$$whole.${parts.last}';
+}
+
+String _partnerLabel(double rating, int totalReviews) {
+	if (totalReviews >= 10 && rating >= 4.8) {
+		return 'Pro Partner';
+	}
+	if (totalReviews >= 5 && rating >= 4.5) {
+		return 'Rising Star';
+	}
+	return 'New Partner';
 }
