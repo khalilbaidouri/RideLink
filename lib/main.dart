@@ -15,13 +15,13 @@ import 'features/home/home_screen.dart';
 import 'features/home/messages_screen.dart';
 import 'features/home/profile_screen.dart';
 import 'features/home/rides_screen.dart';
-import 'features/navigation/app_shell.dart';
+import 'core/router/app_shell.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/driver/activity_screen.dart';
 import 'features/driver/alerts_screen.dart';
 import 'features/driver/dashboard_screen.dart';
 import 'features/driver/settings_screen.dart';
-import 'theme/ride_link_theme.dart';
+import 'core/theme/ride_link_theme.dart';
 import 'features/cities/presentation/screens/city_picker_screen.dart';
 import 'features/vehicles/presentation/screens/vehicles_screen.dart';
 
