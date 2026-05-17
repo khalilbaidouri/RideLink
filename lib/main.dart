@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ride_link/features/route/ride_review/screens/ride_review_screen.dart';
 import 'package:ride_link/features/route/route_details_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -59,7 +60,6 @@ const List<NavigationDestination> _driverDestinations = [
     label: 'Activity',
   ),
   NavigationDestination(
-    // ← placeholder central pour le FAB
     icon: SizedBox.shrink(),
     label: '',
   ),
@@ -200,9 +200,8 @@ class RideLinkApp extends StatelessWidget {
           builder: (context, state, navigationShell) => AppShell(
             navigationShell: navigationShell,
             destinations: _driverDestinations,
-            showAddButton: true, // ← AJOUT
-            onAddButtonPressed: () => // ← AJOUT
-                context.push('/driver/route-details'), // ← AJOUT
+            showAddButton: true,
+            onAddButtonPressed: () => context.push('/driver/route-details'),
           ),
           branches: [
             StatefulShellBranch(routes: [
@@ -218,7 +217,6 @@ class RideLinkApp extends StatelessWidget {
               ),
             ]),
             StatefulShellBranch(routes: [
-              // ← placeholder branch pour index 2
               GoRoute(
                 path: '/driver/new-route',
                 builder: (context, state) => RouteDetailsScreen(),
@@ -241,9 +239,8 @@ class RideLinkApp extends StatelessWidget {
 
         // ─── ROUTES STANDALONE ─────────────────────────────────────────
         GoRoute(
-          path: '/driver/route-details', // ← AJOUT
-          builder: (context, state) => // ← AJOUT
-              RouteDetailsScreen(), // ← AJOUT
+          path: '/driver/route-details',
+          builder: (context, state) => RouteDetailsScreen(),
         ),
         GoRoute(
           path: '/passenger/cities',
@@ -254,6 +251,23 @@ class RideLinkApp extends StatelessWidget {
         GoRoute(
           path: '/passenger/vehicles',
           builder: (context, state) => const VehiclesScreen(),
+        ),
+
+        // ─── REVIEW SCREEN ─────────────────────────────────────────────
+        GoRoute(
+          path: '/passenger/review',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>;
+            return RideReviewScreen(
+              rideId: extra['rideId'] as int,
+              reviewedUserId: extra['reviewedUserId'] as String,
+              reviewedUserName: extra['reviewedUserName'] as String,
+              reviewedUserAvatarUrl: extra['reviewedUserAvatarUrl'] as String?,
+              departureCity: extra['departureCity'] as String,
+              destinationCity: extra['destinationCity'] as String,
+              rideDate: extra['rideDate'] as String,
+            );
+          },
         ),
       ],
     );
