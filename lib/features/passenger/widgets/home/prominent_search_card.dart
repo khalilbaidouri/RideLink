@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:ride_link/features/passenger/providers/search_ride_notifier.dart';
-import 'package:ride_link/features/passenger/widgets/date_bottom_sheet.dart';
-import 'package:ride_link/features/passenger/widgets/from_location_bottom_sheet.dart';
-import 'package:ride_link/features/passenger/widgets/search_field_card.dart';
-import 'package:ride_link/features/passenger/widgets/seats_bottom_sheet.dart';
-import 'package:ride_link/features/passenger/widgets/to_location_bottom_sheet.dart';
+import 'package:ride_link/features/passenger/widgets/home/date_bottom_sheet.dart';
+import 'package:ride_link/features/passenger/widgets/home/from_location_bottom_sheet.dart';
+import 'package:ride_link/features/passenger/widgets/home/search_field_card.dart';
+import 'package:ride_link/features/passenger/widgets/home/seats_bottom_sheet.dart';
+import 'package:ride_link/features/passenger/widgets/home/to_location_bottom_sheet.dart';
 
 class ProminentSearchCard extends ConsumerWidget {
   const ProminentSearchCard({super.key});
