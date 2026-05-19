@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:ride_link/features/passenger/widgets/greeting.dart';
-import 'package:ride_link/features/passenger/widgets/popular_routes_chips.dart';
-import 'package:ride_link/features/passenger/widgets/prominent_search_card.dart';
-import 'package:ride_link/features/passenger/widgets/recent_rides_list.dart';
+import 'package:ride_link/features/passenger/widgets/home/greeting.dart';
+import 'package:ride_link/features/passenger/widgets/home/popular_routes_chips.dart';
+import 'package:ride_link/features/passenger/widgets/home/prominent_search_card.dart';
+import 'package:ride_link/features/passenger/widgets/home/recent_rides_list.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
