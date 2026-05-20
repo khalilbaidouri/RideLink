@@ -376,7 +376,7 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
         child: Stack(
           children: [
             CustomPaint(painter: _MapPainter(), size: Size.infinite),
-            CustomPaint(
+            const CustomPaint(
                 painter: _RouteLinePainter(_primary), size: Size.infinite),
           ],
         ),

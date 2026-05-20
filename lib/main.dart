@@ -23,6 +23,7 @@ import 'features/driver/settings_screen.dart';
 import 'theme/ride_link_theme.dart';
 import 'features/cities/presentation/screens/city_picker_screen.dart';
 import 'features/vehicles/presentation/screens/vehicles_screen.dart';
+import 'features/notifications/screens/notifications_screen.dart';
 
 const List<NavigationDestination> _passengerDestinations = [
   NavigationDestination(
@@ -144,6 +145,9 @@ class RideLinkApp extends StatelessWidget {
         GoRoute(
           path: '/login',
           builder: (context, state) => const Login(),
+        ),GoRoute(
+          path: '/notifications',
+          builder: (context, state) => const NotificationsScreen(),
         ),
         GoRoute(
           path: '/forgot-password',
@@ -221,7 +225,7 @@ class RideLinkApp extends StatelessWidget {
               // ← placeholder branch pour index 2
               GoRoute(
                 path: '/driver/new-route',
-                builder: (context, state) => RouteDetailsScreen(),
+                builder: (context, state) => const RouteDetailsScreen(),
               ),
             ]),
             StatefulShellBranch(routes: [
@@ -243,7 +247,7 @@ class RideLinkApp extends StatelessWidget {
         GoRoute(
           path: '/driver/route-details', // ← AJOUT
           builder: (context, state) => // ← AJOUT
-              RouteDetailsScreen(), // ← AJOUT
+              const RouteDetailsScreen(), // ← AJOUT
         ),
         GoRoute(
           path: '/passenger/cities',

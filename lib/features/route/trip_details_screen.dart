@@ -340,10 +340,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
         children: [
           GestureDetector(
             onTap: () => Navigator.pop(context),
-            child: Icon(Icons.arrow_back, color: _primary, size: 24),
+            child: const Icon(Icons.arrow_back, color: _primary, size: 24),
           ),
           const SizedBox(width: 12),
-          Text(
+          const Text(
             'Ride Bookings',
             style: TextStyle(
               color: _primary,
@@ -379,7 +379,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                   fontWeight: FontWeight.w700,
                   color: Colors.grey.shade800),
             ),
-            Text(
+            const Text(
               'Trip Details',
               style: TextStyle(
                   fontSize: 14,
