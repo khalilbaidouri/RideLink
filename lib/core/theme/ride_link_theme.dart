@@ -150,13 +150,13 @@ class RideLinkTheme {
 
     // 🔴 FIX 2
     checkboxTheme: CheckboxThemeData(
-      fillColor: MaterialStateProperty.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) {
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
           return lightColorScheme.primary;
         }
         return lightColorScheme.surfaceContainerHighest;
       }),
-      checkColor: MaterialStateProperty.all(
+      checkColor: WidgetStateProperty.all(
         lightColorScheme.onPrimary,
       ),
       shape: RoundedRectangleBorder(

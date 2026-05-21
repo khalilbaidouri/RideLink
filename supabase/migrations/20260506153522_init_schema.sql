@@ -73,18 +73,6 @@ create table public.bookings (
 );
 -- alter table public.bookings enable row level security;
 
--- =============================================
--- NOTIFICATIONS
--- =============================================
-create table public.notifications (
-  id         bigint generated always as identity primary key,
-  user_id    bigint references public.users(id) on delete cascade,
-  title      text,
-  body       text,
-  is_read    boolean default false,
-  created_at timestamptz default now()
-);
--- alter table public.notifications enable row level security;
 
 -- =============================================
 -- CONVERSATIONS

@@ -273,9 +273,9 @@ class _WelcomeSlide extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          Card(
+          const Card(
             child: Padding(
-              padding: const EdgeInsets.all(14),
+              padding: EdgeInsets.all(14),
               child: Row(
                 children: [
                   Expanded(
@@ -284,7 +284,7 @@ class _WelcomeSlide extends StatelessWidget {
                       label: 'Verified Drivers',
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: _InfoPill(
                       icon: Icons.eco_outlined,

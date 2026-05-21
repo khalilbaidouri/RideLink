@@ -232,7 +232,7 @@ class _VehicleFormSheetState extends ConsumerState<VehicleFormSheet> {
                         const SizedBox(height: 16),
 
                         // ---- Catégorie ------------------------------------
-                        _SectionLabel('Catégorie'),
+                        const _SectionLabel('Catégorie'),
                         const SizedBox(height: 8),
                         _CategorySelector(
                           selected: _category,
@@ -241,7 +241,7 @@ class _VehicleFormSheetState extends ConsumerState<VehicleFormSheet> {
                         const SizedBox(height: 16),
 
                         // ---- Nombre de places ----------------------------
-                        _SectionLabel('Nombre de places (conducteur inclus)'),
+                        const _SectionLabel('Nombre de places (conducteur inclus)'),
                         const SizedBox(height: 8),
                         _SeatsSelector(
                           value: _totalSeats,

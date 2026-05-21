@@ -114,7 +114,7 @@ class _LoginState extends State<Login> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.directions_car,
                                   color: Colors.white,
                                 ),

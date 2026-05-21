@@ -172,14 +172,14 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            _AppBar(primary: _primary),
+            const _AppBar(primary: _primary),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _SectionHeader(primary: _primary),
+                    const _SectionHeader(primary: _primary),
                     const SizedBox(height: 20),
 
                     // From / To card
@@ -196,8 +196,9 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                             },
                             onPickDestination: () async {
                               final c = await _pickCity('Ville d\'arrivée');
-                              if (c != null)
+                              if (c != null) {
                                 setState(() => _destinationCity = c);
+                              }
                             },
                             onSwap: _swapCities,
                             hint: _hint,
