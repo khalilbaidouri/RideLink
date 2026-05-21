@@ -348,7 +348,7 @@ class _RolePill extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(color: colors.outlineVariant),
       ),
-      backgroundColor: colors.surfaceVariant,
+      backgroundColor: colors.surfaceContainerHighest,
       showCheckmark: false,
     );
   }

@@ -20,6 +20,8 @@ dependencies:
   equatable: ^2.0.8
   flutter_riverpod: ^2.6.1
   geolocator: ^14.0.2
+  intl: ^0.20.2
+  geocoding: ^4.0.0
 
 dev_dependencies:
   flutter_test:
