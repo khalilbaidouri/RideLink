@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ride_link/features/passenger/providers/search_results_provider.dart';
 import 'package:ride_link/features/passenger/widgets/search/search_app_bar.dart';
 import 'package:ride_link/features/passenger/widgets/search/search_result_card.dart';
@@ -64,7 +65,14 @@ class SearchScreen extends ConsumerWidget {
                             return const SizedBox(height: 12);
                           }
                           final itemIndex = index ~/ 2;
-                          return SearchResultCard(result: results[itemIndex]);
+                          final result = results[itemIndex];
+                          return SearchResultCard(
+                            result: result,
+                            onTap: () => context.push(
+                              '/passenger/ride/${result.id}',
+                              extra: result,
+                            ),
+                          );
                         },
                         childCount:
                             results.isEmpty ? 0 : (results.length * 2 - 1),
