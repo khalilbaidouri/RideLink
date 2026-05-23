@@ -10,7 +10,6 @@ import 'package:ride_link/features/cities/presentation/screens/city_picker_scree
 import 'package:ride_link/features/driver/activity_screen.dart';
 import 'package:ride_link/features/driver/alerts_screen.dart';
 import 'package:ride_link/features/driver/dashboard_screen.dart';
-import 'package:ride_link/features/passenger/models/search_ride_result.dart';
 import 'package:ride_link/features/passenger/screens/home_screen.dart';
 import 'package:ride_link/features/passenger/screens/ride_details_screen.dart';
 
@@ -252,13 +251,9 @@ GoRouter _createRouter() {
       ),
       GoRoute(
         path: '/passenger/ride/:id',
-        builder: (context, state) {
-          final result = state.extra as SearchRideResult?;
-          return RideDetailsScreen(
-            rideId: state.pathParameters['id'] ?? '',
-            result: result,
-          );
-        },
+        builder: (context, state) => RideDetailsScreen(
+          rideId: state.pathParameters['id'] ?? '',
+        ),
       ),
     ],
   );
