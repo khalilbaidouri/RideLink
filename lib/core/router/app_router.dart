@@ -21,7 +21,7 @@ import 'package:ride_link/features/home/rides_screen.dart';
 import 'package:ride_link/core/router/app_shell.dart';
 import 'package:ride_link/features/onboarding/onboarding_screen.dart';
 import 'package:ride_link/features/passenger/screens/search_screen.dart';
-import 'package:ride_link/features/passenger/screens/notifications_screen.dart';
+import 'package:ride_link/features/notifications/screens/notifications_screen.dart';
 import 'package:ride_link/features/vehicles/presentation/screens/vehicles_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ride_link/features/booking/screens/booking_requests_screen.dart';
