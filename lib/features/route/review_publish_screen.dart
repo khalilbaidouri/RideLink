@@ -1,4 +1,11 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // ─────────────────────────────────────────────
@@ -12,6 +19,12 @@ class RideReviewData {
   final int destinationCityId;
   final String meetingPoint;
   final String dropoffPoint;
+
+  // Coordinates for map (from City objects in Step 1)
+  final double departureLat;
+  final double departureLng;
+  final double destinationLat;
+  final double destinationLng;
 
   // Trip (Step 2)
   final DateTime departureDateTime;
@@ -29,6 +42,10 @@ class RideReviewData {
     required this.destinationCityId,
     required this.meetingPoint,
     required this.dropoffPoint,
+    required this.departureLat,
+    required this.departureLng,
+    required this.destinationLat,
+    required this.destinationLng,
     required this.departureDateTime,
     required this.seats,
     required this.price,
@@ -72,18 +89,8 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
       dayStr = 'Tomorrow';
     } else {
       const months = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec'
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
       ];
       dayStr = '${months[dt.month - 1]} ${dt.day}';
     }
@@ -143,11 +150,6 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
   }
 
   // ── Save as Draft ─────────────────────────
-  // Note: Pour sauvegarder comme brouillon, vous devez ajouter
-  // 'draft' dans le check constraint de la colonne status :
-  // ALTER TABLE rides DROP CONSTRAINT rides_status_check;
-  // ALTER TABLE rides ADD CONSTRAINT rides_status_check
-  //   CHECK (status IN ('active', 'completed', 'cancelled', 'draft'));
   Future<void> _saveDraft() async {
     setState(() => _isSavingDraft = true);
     try {
@@ -169,7 +171,7 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
             widget.data.departureDateTime.toUtc().toIso8601String(),
         'price': widget.data.price,
         'available_seats': widget.data.seats,
-        'status': 'draft', // nécessite la migration SQL ci-dessus
+        'status': 'draft',
       });
 
       if (!mounted) return;
@@ -282,7 +284,16 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
                           height: 1.4),
                     ),
                     const SizedBox(height: 14),
-                    _buildMapPreview(),
+                    // ── Vraie carte Google Maps ──
+                    _ReviewMapPreview(
+                      departureCityName: d.departureCityName,
+                      destinationCityName: d.destinationCityName,
+                      departureLat: d.departureLat,
+                      departureLng: d.departureLng,
+                      destinationLat: d.destinationLat,
+                      destinationLng: d.destinationLng,
+                      primary: _primary,
+                    ),
                     const SizedBox(height: 14),
                     _buildDetailsCard(d),
                     const SizedBox(height: 14),
@@ -355,32 +366,14 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
         const SizedBox(height: 8),
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
+          child: const LinearProgressIndicator(
             value: 1.0,
-            backgroundColor: Colors.grey.shade200,
-            valueColor: const AlwaysStoppedAnimation<Color>(_primary),
+            backgroundColor: Color(0xFFE0E0E0),
+            valueColor: AlwaysStoppedAnimation<Color>(_primary),
             minHeight: 5,
           ),
         ),
       ],
-    );
-  }
-
-  // ── Map preview ───────────────────────────
-  Widget _buildMapPreview() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: SizedBox(
-        height: 160,
-        width: double.infinity,
-        child: Stack(
-          children: [
-            CustomPaint(painter: _MapPainter(), size: Size.infinite),
-            const CustomPaint(
-                painter: _RouteLinePainter(_primary), size: Size.infinite),
-          ],
-        ),
-      ),
     );
   }
 
@@ -685,6 +678,226 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
 }
 
 // ─────────────────────────────────────────────
+//  Real Google Maps Preview (same as RouteDetailsScreen)
+// ─────────────────────────────────────────────
+
+class _ReviewMapPreview extends StatefulWidget {
+  final String departureCityName;
+  final String destinationCityName;
+  final double departureLat;
+  final double departureLng;
+  final double destinationLat;
+  final double destinationLng;
+  final Color primary;
+
+  const _ReviewMapPreview({
+    required this.departureCityName,
+    required this.destinationCityName,
+    required this.departureLat,
+    required this.departureLng,
+    required this.destinationLat,
+    required this.destinationLng,
+    required this.primary,
+  });
+
+  @override
+  State<_ReviewMapPreview> createState() => _ReviewMapPreviewState();
+}
+
+class _ReviewMapPreviewState extends State<_ReviewMapPreview> {
+  final Completer<GoogleMapController> _controller = Completer();
+  final Set<Marker> _markers = {};
+  final Set<Polyline> _polylines = {};
+  bool _mapReady = false;
+
+  static const CameraPosition _initialPosition = CameraPosition(
+    target: LatLng(31.7917, -7.0926), // Centre du Maroc
+    zoom: 5,
+  );
+
+  Future<void> _drawRoute() async {
+    final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
+    if (apiKey == null || apiKey.isEmpty) return;
+
+    final origin = '${widget.departureLat},${widget.departureLng}';
+    final destination = '${widget.destinationLat},${widget.destinationLng}';
+
+    final url = 'https://maps.googleapis.com/maps/api/directions/json'
+        '?origin=$origin'
+        '&destination=$destination'
+        '&key=$apiKey';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      final data = jsonDecode(response.body);
+
+      if (data['status'] != 'OK') return;
+
+      final route = data['routes'][0];
+      final leg = route['legs'][0];
+
+      final startLoc = leg['start_location'];
+      final endLoc = leg['end_location'];
+
+      final startLatLng = LatLng(
+        (startLoc['lat'] as num).toDouble(),
+        (startLoc['lng'] as num).toDouble(),
+      );
+      final endLatLng = LatLng(
+        (endLoc['lat'] as num).toDouble(),
+        (endLoc['lng'] as num).toDouble(),
+      );
+
+      // Décode la polyline
+      final encoded = route['overview_polyline']['points'] as String;
+      final decodedPoints = PolylinePoints().decodePolyline(encoded);
+      final polylineCoords =
+          decodedPoints.map((e) => LatLng(e.latitude, e.longitude)).toList();
+
+      // Anime la caméra pour afficher les deux villes
+      final controller = await _controller.future;
+      final swLat = startLatLng.latitude < endLatLng.latitude
+          ? startLatLng.latitude
+          : endLatLng.latitude;
+      final swLng = startLatLng.longitude < endLatLng.longitude
+          ? startLatLng.longitude
+          : endLatLng.longitude;
+      final neLat = startLatLng.latitude > endLatLng.latitude
+          ? startLatLng.latitude
+          : endLatLng.latitude;
+      final neLng = startLatLng.longitude > endLatLng.longitude
+          ? startLatLng.longitude
+          : endLatLng.longitude;
+
+      controller.animateCamera(
+        CameraUpdate.newLatLngBounds(
+          LatLngBounds(
+            southwest: LatLng(swLat, swLng),
+            northeast: LatLng(neLat, neLng),
+          ),
+          60,
+        ),
+      );
+
+      setState(() {
+        _markers.clear();
+        _polylines.clear();
+
+        _markers.add(Marker(
+          markerId: const MarkerId('start'),
+          position: startLatLng,
+          infoWindow: InfoWindow(title: widget.departureCityName),
+        ));
+
+        _markers.add(Marker(
+          markerId: const MarkerId('end'),
+          position: endLatLng,
+          infoWindow: InfoWindow(title: widget.destinationCityName),
+        ));
+
+        _polylines.add(Polyline(
+          polylineId: const PolylineId('route'),
+          points: polylineCoords,
+          color: widget.primary,
+          width: 4,
+          startCap: Cap.roundCap,
+          endCap: Cap.roundCap,
+        ));
+      });
+    } catch (_) {
+      // Silently ignore network errors for preview
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        height: 160,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.07),
+                blurRadius: 8,
+                offset: const Offset(0, 2)),
+          ],
+        ),
+        child: Stack(
+          children: [
+            // Vraie carte Google Maps
+            GoogleMap(
+              initialCameraPosition: _initialPosition,
+              markers: _markers,
+              polylines: _polylines,
+              mapType: MapType.normal,
+              zoomControlsEnabled: false,
+              myLocationButtonEnabled: false,
+              compassEnabled: false,
+              rotateGesturesEnabled: false,
+              scrollGesturesEnabled: false,
+              zoomGesturesEnabled: false,
+              tiltGesturesEnabled: false,
+              onMapCreated: (GoogleMapController c) {
+                if (!_controller.isCompleted) {
+                  _controller.complete(c);
+                }
+                setState(() => _mapReady = true);
+                _drawRoute();
+              },
+            ),
+
+            // Badge "Preview on Map" en bas à gauche
+            Positioned(
+              bottom: 14,
+              left: 14,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(0.12),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2)),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.map_outlined, size: 16, color: widget.primary),
+                    const SizedBox(width: 6),
+                    const Text(
+                      'Preview on Map',
+                      style: TextStyle(
+                          color: Color(0xFF1A1A1A),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Indicateur de chargement pendant le tracé de la route
+            if (_mapReady && _polylines.isEmpty)
+              const Center(
+                child: CircularProgressIndicator(
+                  color: Color(0xFF1E5C2E),
+                  strokeWidth: 2.5,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
 //  Small reusable widgets
 // ─────────────────────────────────────────────
 
@@ -774,86 +987,4 @@ class _TagChip extends StatelessWidget {
           ],
         ),
       );
-}
-
-// ─────────────────────────────────────────────
-//  Painters
-// ─────────────────────────────────────────────
-
-class _MapPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    const gradient = LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [Color(0xFF6EA8A0), Color(0xFF4A8A80)],
-    );
-    canvas.drawRect(rect, Paint()..shader = gradient.createShader(rect));
-
-    final gridPaint = Paint()
-      ..color = Colors.white.withOpacity(0.15)
-      ..strokeWidth = 1;
-
-    for (double y = 0; y < size.height; y += 18) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-    }
-    for (double x = 0; x < size.width; x += 18) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
-    }
-
-    final blockPaint = Paint()..color = Colors.white.withOpacity(0.08);
-    for (int row = 0; row < 8; row++) {
-      for (int col = 0; col < 20; col++) {
-        if ((row + col) % 3 == 0) {
-          canvas.drawRect(
-            Rect.fromLTWH(col * 18 + 1, row * 18 + 1, 16, 16),
-            blockPaint,
-          );
-        }
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_) => false;
-}
-
-class _RouteLinePainter extends CustomPainter {
-  final Color color;
-  const _RouteLinePainter(this.color);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final linePaint = Paint()
-      ..color = color
-      ..strokeWidth = 3.5
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-
-    final path = Path();
-    path.moveTo(size.width * 0.5, size.height * 0.12);
-    path.cubicTo(
-      size.width * 0.42,
-      size.height * 0.35,
-      size.width * 0.58,
-      size.height * 0.55,
-      size.width * 0.5,
-      size.height * 0.88,
-    );
-    canvas.drawPath(path, linePaint);
-
-    canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.12), 7,
-        Paint()..color = Colors.white);
-    canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.12), 4,
-        Paint()..color = color);
-
-    canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.88), 7,
-        Paint()..color = color);
-    canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.88), 3,
-        Paint()..color = Colors.white);
-  }
-
-  @override
-  bool shouldRepaint(_) => false;
 }

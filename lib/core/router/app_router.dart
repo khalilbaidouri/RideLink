@@ -11,6 +11,7 @@ import 'package:ride_link/features/driver/activity_screen.dart';
 import 'package:ride_link/features/driver/alerts_screen.dart';
 import 'package:ride_link/features/driver/dashboard_screen.dart';
 import 'package:ride_link/features/passenger/screens/home_screen.dart';
+import 'package:ride_link/features/passenger/screens/ride_details_screen.dart';
 
 import 'package:ride_link/features/profile/change_password.dart';
 import 'package:ride_link/features/profile/settings_screen.dart';
@@ -21,6 +22,7 @@ import 'package:ride_link/core/router/app_shell.dart';
 import 'package:ride_link/features/onboarding/onboarding_screen.dart';
 import 'package:ride_link/features/passenger/screens/search_screen.dart';
 import 'package:ride_link/features/passenger/screens/notifications_screen.dart';
+import 'package:ride_link/features/route/route_details_screen.dart';
 import 'package:ride_link/features/vehicles/presentation/screens/vehicles_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -64,6 +66,11 @@ const List<NavigationDestination> _driverDestinations = [
     icon: Icon(Icons.query_stats_outlined),
     selectedIcon: Icon(Icons.query_stats),
     label: 'Activity',
+  ),
+  NavigationDestination(
+    icon: Icon(Icons.add_circle_outline),
+    selectedIcon: Icon(Icons.add_circle),
+    label: 'Add Ride',
   ),
   NavigationDestination(
     icon: Icon(Icons.notifications_outlined),
@@ -214,6 +221,12 @@ GoRouter _createRouter() {
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
+              path: '/driver/add-ride',
+              builder: (context, state) => const RouteDetailsScreen(),
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
               path: '/driver/alerts',
               builder: (context, state) => const AlertsScreen(),
             ),
@@ -247,6 +260,12 @@ GoRouter _createRouter() {
       GoRoute(
         path: '/passenger/search',
         builder: (context, state) => const SearchScreen(),
+      ),
+      GoRoute(
+        path: '/passenger/ride/:id',
+        builder: (context, state) => RideDetailsScreen(
+          rideId: state.pathParameters['id'] ?? '',
+        ),
       ),
     ],
   );

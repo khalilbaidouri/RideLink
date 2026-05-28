@@ -1,4 +1,11 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'trip_details_screen.dart';
 
@@ -29,18 +36,15 @@ class RouteDetailsScreen extends StatefulWidget {
 }
 
 class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
-  // ── Theme ──────────────────────────────────
   static const Color _primary = Color(0xFF1E5C2E);
   static const Color _primaryLight = Color(0xFFE8F5E9);
   static const Color _bg = Color(0xFFF4F5F0);
   static const Color _hint = Color(0xFF9E9E9E);
   static const Color _label = Color(0xFF424242);
 
-  // ── Controllers ────────────────────────────
   final TextEditingController _meetingController = TextEditingController();
   final TextEditingController _dropoffController = TextEditingController();
 
-  // ── State ──────────────────────────────────
   City? _departureCity;
   City? _destinationCity;
   List<City> _cities = [];
@@ -59,7 +63,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     super.dispose();
   }
 
-  // ── Fetch cities from Supabase ─────────────
   Future<void> _fetchCities() async {
     try {
       final response = await Supabase.instance.client
@@ -99,7 +102,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     }
   }
 
-  // ── Swap departure ↔ destination ───────────
   void _swapCities() {
     setState(() {
       final tmp = _departureCity;
@@ -108,7 +110,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     });
   }
 
-  // ── City picker bottom-sheet ───────────────
   Future<City?> _pickCity(String title) async {
     if (_loadingCities) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -133,8 +134,8 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     if (_departureCity == null || _destinationCity == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text(
-                'Veuillez choisir les villes de départ et d\'arrivée.')),
+            content:
+                Text('Veuillez choisir les villes de départ et d\'arrivée.')),
       );
       return;
     }
@@ -158,13 +159,17 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
             destinationCityId: _destinationCity!.id,
             meetingPoint: _meetingController.text.trim(),
             dropoffPoint: _dropoffController.text.trim(),
+            // ← Coordonnées transmises pour la carte Step 3
+            departureLat: _departureCity!.lat,
+            departureLng: _departureCity!.lng,
+            destinationLat: _destinationCity!.lat,
+            destinationLng: _destinationCity!.lng,
           ),
         ),
       ),
     );
   }
 
-  // ────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -181,8 +186,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                   children: [
                     const _SectionHeader(primary: _primary),
                     const SizedBox(height: 20),
-
-                    // From / To card
                     _loadingCities
                         ? _buildLoadingCard()
                         : _CityCard(
@@ -205,8 +208,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                             label: _label,
                           ),
                     const SizedBox(height: 14),
-
-                    // Meeting point
                     _PointCard(
                       icon: Icons.directions_walk_rounded,
                       iconBg: const Color(0xFFE8F5E9),
@@ -214,12 +215,11 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                       title: 'Meeting point',
                       controller: _meetingController,
                       placeholder: 'e.g. Central Station, Platform 4',
-                      subtitle: 'Describe where passengers should wait for you.',
+                      subtitle:
+                          'Describe where passengers should wait for you.',
                       primary: _primary,
                     ),
                     const SizedBox(height: 14),
-
-                    // Drop-off point
                     _PointCard(
                       icon: Icons.flag_rounded,
                       iconBg: const Color(0xFFFFF8E1),
@@ -231,8 +231,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                       primary: _primary,
                     ),
                     const SizedBox(height: 14),
-
-                    // Map preview
                     _MapPreview(
                       departure: _departureCity,
                       destination: _destinationCity,
@@ -302,8 +300,7 @@ class _AppBar extends StatelessWidget {
           CircleAvatar(
             radius: 20,
             backgroundColor: Colors.grey.shade300,
-            child:
-                Icon(Icons.person, color: Colors.grey.shade600, size: 22),
+            child: Icon(Icons.person, color: Colors.grey.shade600, size: 22),
           ),
         ],
       ),
@@ -434,8 +431,7 @@ class _CityCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
-                    border:
-                        Border.all(color: Colors.grey.shade200, width: 1.5),
+                    border: Border.all(color: Colors.grey.shade200, width: 1.5),
                     boxShadow: [
                       BoxShadow(
                           color: Colors.black.withOpacity(0.08),
@@ -443,8 +439,8 @@ class _CityCard extends StatelessWidget {
                           offset: const Offset(0, 2)),
                     ],
                   ),
-                  child: Icon(Icons.swap_vert_rounded,
-                      color: primary, size: 20),
+                  child:
+                      Icon(Icons.swap_vert_rounded, color: primary, size: 20),
                 ),
               ),
             ),
@@ -477,8 +473,7 @@ class _CityField extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           color: const Color(0xFFF6F7F3),
           borderRadius: BorderRadius.circular(12),
@@ -492,13 +487,9 @@ class _CityField extends StatelessWidget {
               child: Text(
                 value ?? placeholder,
                 style: TextStyle(
-                  color: value != null
-                      ? const Color(0xFF1A1A1A)
-                      : hint,
+                  color: value != null ? const Color(0xFF1A1A1A) : hint,
                   fontSize: 15,
-                  fontWeight: value != null
-                      ? FontWeight.w600
-                      : FontWeight.w400,
+                  fontWeight: value != null ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),
             ),
@@ -549,8 +540,7 @@ class _PointCard extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                    color: iconBg,
-                    borderRadius: BorderRadius.circular(10)),
+                    color: iconBg, borderRadius: BorderRadius.circular(10)),
                 child: Icon(icon, color: iconColor, size: 20),
               ),
               const SizedBox(width: 10),
@@ -566,16 +556,14 @@ class _PointCard extends StatelessWidget {
           const SizedBox(height: 12),
           TextField(
             controller: controller,
-            style: const TextStyle(
-                fontSize: 14, color: Color(0xFF1A1A1A)),
+            style: const TextStyle(fontSize: 14, color: Color(0xFF1A1A1A)),
             decoration: InputDecoration(
               hintText: placeholder,
-              hintStyle: TextStyle(
-                  color: Colors.grey.shade400, fontSize: 14),
+              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
               filled: true,
               fillColor: const Color(0xFFF6F7F3),
-              contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14, vertical: 13),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: Colors.grey.shade200),
@@ -592,34 +580,163 @@ class _PointCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(subtitle,
-              style: TextStyle(
-                  color: Colors.grey.shade500, fontSize: 12)),
+              style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
         ],
       ),
     );
   }
 }
 
-class _MapPreview extends StatelessWidget {
+// ─────────────────────────────────────────────
+//  Map Preview — vraie carte Google Maps
+// ─────────────────────────────────────────────
+
+class _MapPreview extends StatefulWidget {
   final City? departure, destination;
   final Color primary;
 
-  const _MapPreview(
-      {required this.departure,
-      required this.destination,
-      required this.primary});
+  const _MapPreview({
+    required this.departure,
+    required this.destination,
+    required this.primary,
+  });
+
+  @override
+  State<_MapPreview> createState() => _MapPreviewState();
+}
+
+class _MapPreviewState extends State<_MapPreview> {
+  final Completer<GoogleMapController> _controller = Completer();
+  final Set<Marker> _markers = {};
+  final Set<Polyline> _polylines = {};
+  bool _mapReady = false;
+
+  static const CameraPosition _initialPosition = CameraPosition(
+    target: LatLng(31.7917, -7.0926),
+    zoom: 5,
+  );
+
+  @override
+  void didUpdateWidget(_MapPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.departure != widget.departure ||
+        oldWidget.destination != widget.destination) {
+      if (_mapReady) _drawRoute();
+    }
+  }
+
+  Future<void> _drawRoute() async {
+    if (widget.departure == null || widget.destination == null) {
+      setState(() {
+        _markers.clear();
+        _polylines.clear();
+      });
+      final controller = await _controller.future;
+      controller.animateCamera(
+        CameraUpdate.newCameraPosition(_initialPosition),
+      );
+      return;
+    }
+
+    final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
+    if (apiKey == null || apiKey.isEmpty) return;
+
+    final origin = '${widget.departure!.lat},${widget.departure!.lng}';
+    final destination = '${widget.destination!.lat},${widget.destination!.lng}';
+
+    final url = 'https://maps.googleapis.com/maps/api/directions/json'
+        '?origin=$origin'
+        '&destination=$destination'
+        '&key=$apiKey';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      final data = jsonDecode(response.body);
+
+      if (data['status'] != 'OK') return;
+
+      final route = data['routes'][0];
+      final leg = route['legs'][0];
+
+      final startLoc = leg['start_location'];
+      final endLoc = leg['end_location'];
+
+      final startLatLng = LatLng(
+        (startLoc['lat'] as num).toDouble(),
+        (startLoc['lng'] as num).toDouble(),
+      );
+      final endLatLng = LatLng(
+        (endLoc['lat'] as num).toDouble(),
+        (endLoc['lng'] as num).toDouble(),
+      );
+
+      final encoded = route['overview_polyline']['points'] as String;
+      final decodedPoints = PolylinePoints().decodePolyline(encoded);
+      final polylineCoords =
+          decodedPoints.map((e) => LatLng(e.latitude, e.longitude)).toList();
+
+      final controller = await _controller.future;
+      final swLat = startLatLng.latitude < endLatLng.latitude
+          ? startLatLng.latitude
+          : endLatLng.latitude;
+      final swLng = startLatLng.longitude < endLatLng.longitude
+          ? startLatLng.longitude
+          : endLatLng.longitude;
+      final neLat = startLatLng.latitude > endLatLng.latitude
+          ? startLatLng.latitude
+          : endLatLng.latitude;
+      final neLng = startLatLng.longitude > endLatLng.longitude
+          ? startLatLng.longitude
+          : endLatLng.longitude;
+
+      controller.animateCamera(
+        CameraUpdate.newLatLngBounds(
+          LatLngBounds(
+            southwest: LatLng(swLat, swLng),
+            northeast: LatLng(neLat, neLng),
+          ),
+          60,
+        ),
+      );
+
+      setState(() {
+        _markers.clear();
+        _polylines.clear();
+
+        _markers.add(Marker(
+          markerId: const MarkerId('start'),
+          position: startLatLng,
+          infoWindow: InfoWindow(title: widget.departure!.name),
+        ));
+
+        _markers.add(Marker(
+          markerId: const MarkerId('end'),
+          position: endLatLng,
+          infoWindow: InfoWindow(title: widget.destination!.name),
+        ));
+
+        _polylines.add(Polyline(
+          polylineId: const PolylineId('route'),
+          points: polylineCoords,
+          color: widget.primary,
+          width: 4,
+          startCap: Cap.roundCap,
+          endCap: Cap.roundCap,
+        ));
+      });
+    } catch (_) {
+      // Silently ignore network errors for preview
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // TODO: open full-screen map
-      },
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        height: 180,
+        height: 200,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: const Color(0xFFD9E8D4),
           boxShadow: [
             BoxShadow(
                 color: Colors.black.withOpacity(0.07),
@@ -627,47 +744,69 @@ class _MapPreview extends StatelessWidget {
                 offset: const Offset(0, 2)),
           ],
         ),
-        clipBehavior: Clip.hardEdge,
         child: Stack(
           children: [
-            CustomPaint(
-                painter: _FakeMapPainter(), size: Size.infinite),
-            if (departure != null && destination != null)
-              CustomPaint(
-                  painter: _RouteLinePainter(primary),
-                  size: Size.infinite),
+            GoogleMap(
+              initialCameraPosition: _initialPosition,
+              markers: _markers,
+              polylines: _polylines,
+              mapType: MapType.normal,
+              zoomControlsEnabled: false,
+              myLocationButtonEnabled: false,
+              compassEnabled: false,
+              rotateGesturesEnabled: false,
+              scrollGesturesEnabled: false,
+              zoomGesturesEnabled: false,
+              tiltGesturesEnabled: false,
+              onMapCreated: (GoogleMapController c) {
+                if (!_controller.isCompleted) {
+                  _controller.complete(c);
+                }
+                setState(() => _mapReady = true);
+                _drawRoute();
+              },
+            ),
             Positioned(
               bottom: 14,
               left: 14,
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 6,
+                        color: Colors.black.withOpacity(0.12),
+                        blurRadius: 8,
                         offset: const Offset(0, 2)),
                   ],
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.map_outlined, size: 18, color: primary),
+                    Icon(Icons.map_outlined, size: 16, color: widget.primary),
                     const SizedBox(width: 6),
                     const Text(
                       'Preview on Map',
                       style: TextStyle(
                           color: Color(0xFF1A1A1A),
                           fontWeight: FontWeight.w600,
-                          fontSize: 14),
+                          fontSize: 13),
                     ),
                   ],
                 ),
               ),
             ),
+            if (widget.departure != null &&
+                widget.destination != null &&
+                _polylines.isEmpty)
+              const Center(
+                child: CircularProgressIndicator(
+                  color: Color(0xFF1E5C2E),
+                  strokeWidth: 2.5,
+                ),
+              ),
           ],
         ),
       ),
@@ -675,61 +814,9 @@ class _MapPreview extends StatelessWidget {
   }
 }
 
-class _FakeMapPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFFCCDEC7)
-      ..strokeWidth = 1;
-    for (double y = 0; y < size.height; y += 28) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
-    for (double x = 0; x < size.width; x += 28) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_) => false;
-}
-
-class _RouteLinePainter extends CustomPainter {
-  final Color color;
-  const _RouteLinePainter(this.color);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 3
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-
-    canvas.drawCircle(
-        Offset(size.width * 0.5, size.height * 0.15), 6,
-        Paint()..color = color);
-
-    final path = Path();
-    path.moveTo(size.width * 0.5, size.height * 0.15);
-    path.cubicTo(
-      size.width * 0.45,
-      size.height * 0.35,
-      size.width * 0.55,
-      size.height * 0.55,
-      size.width * 0.5,
-      size.height * 0.85,
-    );
-    canvas.drawPath(path, paint);
-
-    canvas.drawCircle(
-        Offset(size.width * 0.5, size.height * 0.85), 6,
-        Paint()..color = color);
-  }
-
-  @override
-  bool shouldRepaint(_) => false;
-}
-
+// ─────────────────────────────────────────────
+//  Next Button
+// ─────────────────────────────────────────────
 class _NextButton extends StatelessWidget {
   final Color primary;
   final VoidCallback onTap;
@@ -762,8 +849,8 @@ class _NextButton extends StatelessWidget {
             backgroundColor: primary,
             foregroundColor: Colors.white,
             elevation: 0,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           ),
         ),
       ),
@@ -873,11 +960,11 @@ class _CityPickerSheetState extends State<_CityPickerSheet> {
                     itemBuilder: (_, i) {
                       final city = _filtered[i];
                       return ListTile(
-                        leading: Icon(Icons.location_city,
-                            color: widget.primary),
+                        leading:
+                            Icon(Icons.location_city, color: widget.primary),
                         title: Text(city.name,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w500)),
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w500)),
                         onTap: () => Navigator.pop(context, city),
                       );
                     },

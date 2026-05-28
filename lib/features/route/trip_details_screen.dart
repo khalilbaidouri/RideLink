@@ -14,6 +14,12 @@ class RouteData {
   final String meetingPoint;
   final String dropoffPoint;
 
+  // ← Coordonnées ajoutées pour la carte Step 3
+  final double departureLat;
+  final double departureLng;
+  final double destinationLat;
+  final double destinationLng;
+
   const RouteData({
     required this.departureCityName,
     required this.destinationCityName,
@@ -21,6 +27,10 @@ class RouteData {
     required this.destinationCityId,
     this.meetingPoint = '',
     this.dropoffPoint = '',
+    this.departureLat = 0.0,
+    this.departureLng = 0.0,
+    this.destinationLat = 0.0,
+    this.destinationLng = 0.0,
   });
 }
 
@@ -61,15 +71,11 @@ class TripDetailsScreen extends StatefulWidget {
 }
 
 class _TripDetailsScreenState extends State<TripDetailsScreen> {
-  // ── Theme ──────────────────────────────────
   static const Color _primary = Color(0xFF1E5C2E);
   static const Color _bg = Color(0xFFF4F5F0);
 
-  // ── State ──────────────────────────────────
-  DateTime _departureDate =
-      DateTime.now().add(const Duration(days: 1));
-  TimeOfDay _departureTime =
-      const TimeOfDay(hour: 8, minute: 30);
+  DateTime _departureDate = DateTime.now().add(const Duration(days: 1));
+  TimeOfDay _departureTime = const TimeOfDay(hour: 8, minute: 30);
   int _seats = 3;
   final TextEditingController _priceController =
       TextEditingController(text: '150');
@@ -90,7 +96,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     super.dispose();
   }
 
-  // ── Fetch vehicles from Supabase ───────────
   Future<void> _fetchVehicles() async {
     try {
       final user = Supabase.instance.client.auth.currentUser;
@@ -127,9 +132,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
       if (mounted) {
         setState(() => _loadingVehicles = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text('Erreur chargement véhicules: ${e.message}')),
+          SnackBar(content: Text('Erreur chargement véhicules: ${e.message}')),
         );
       }
     } catch (e) {
@@ -142,7 +145,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     }
   }
 
-  // ── Date picker ────────────────────────────
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -159,7 +161,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     if (picked != null) setState(() => _departureDate = picked);
   }
 
-  // ── Time picker ────────────────────────────
   Future<void> _pickTime() async {
     final picked = await showTimePicker(
       context: context,
@@ -193,15 +194,13 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     final price = double.tryParse(_priceController.text.trim());
     if (price == null || price <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Veuillez entrer un prix valide.')),
+        const SnackBar(content: Text('Veuillez entrer un prix valide.')),
       );
       return;
     }
     if (_selectedVehicle == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Veuillez sélectionner un véhicule.')),
+        const SnackBar(content: Text('Veuillez sélectionner un véhicule.')),
       );
       return;
     }
@@ -225,6 +224,11 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
             destinationCityId: widget.routeData.destinationCityId,
             meetingPoint: widget.routeData.meetingPoint,
             dropoffPoint: widget.routeData.dropoffPoint,
+            // ← Coordonnées transmises depuis Step 1
+            departureLat: widget.routeData.departureLat,
+            departureLng: widget.routeData.departureLng,
+            destinationLat: widget.routeData.destinationLat,
+            destinationLng: widget.routeData.destinationLng,
             departureDateTime: dt,
             seats: _seats,
             price: price,
@@ -254,8 +258,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                   children: [
                     _buildStepHeader(),
                     const SizedBox(height: 24),
-
-                    // Date & Time row
                     Row(
                       children: [
                         Expanded(child: _buildDateField()),
@@ -264,16 +266,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-
-                    // Seats card
                     _buildSeatsCard(),
                     const SizedBox(height: 16),
-
-                    // Price per seat
                     _buildPriceField(),
                     const SizedBox(height: 20),
-
-                    // Select vehicle
                     Text(
                       'Select Vehicle',
                       style: TextStyle(
@@ -282,8 +278,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                           color: Colors.grey.shade700),
                     ),
                     const SizedBox(height: 10),
-
-                    // Vehicle list (loading / empty / list)
                     if (_loadingVehicles)
                       const Center(
                         child: Padding(
@@ -298,8 +292,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(14),
-                          border:
-                              Border.all(color: Colors.grey.shade200),
+                          border: Border.all(color: Colors.grey.shade200),
                         ),
                         child: Row(
                           children: [
@@ -310,8 +303,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                               child: Text(
                                 'Aucun véhicule trouvé.\nAjoutez-en un dans votre profil.',
                                 style: TextStyle(
-                                    color: Colors.grey.shade500,
-                                    fontSize: 13),
+                                    color: Colors.grey.shade500, fontSize: 13),
                               ),
                             ),
                           ],
@@ -319,7 +311,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                       )
                     else
                       ..._vehicles.map(_buildVehicleTile),
-
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -332,7 +323,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     );
   }
 
-  // ── AppBar ────────────────────────────────
   Widget _buildAppBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -356,15 +346,13 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
           CircleAvatar(
             radius: 20,
             backgroundColor: Colors.grey.shade300,
-            child:
-                Icon(Icons.person, color: Colors.grey.shade600, size: 22),
+            child: Icon(Icons.person, color: Colors.grey.shade600, size: 22),
           ),
         ],
       ),
     );
   }
 
-  // ── Step header ───────────────────────────
   Widget _buildStepHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -382,9 +370,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
             const Text(
               'Trip Details',
               style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: _primary),
+                  fontSize: 14, fontWeight: FontWeight.w600, color: _primary),
             ),
           ],
         ),
@@ -394,8 +380,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
           child: LinearProgressIndicator(
             value: 2 / 3,
             backgroundColor: Colors.grey.shade200,
-            valueColor:
-                const AlwaysStoppedAnimation<Color>(_primary),
+            valueColor: const AlwaysStoppedAnimation<Color>(_primary),
             minHeight: 5,
           ),
         ),
@@ -403,7 +388,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     );
   }
 
-  // ── Date field ────────────────────────────
   Widget _buildDateField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -417,8 +401,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
         GestureDetector(
           onTap: _pickDate,
           child: Container(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 14, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
@@ -444,7 +427,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     );
   }
 
-  // ── Time field ────────────────────────────
   Widget _buildTimeField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -458,8 +440,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
         GestureDetector(
           onTap: _pickTime,
           child: Container(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 14, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
@@ -485,11 +466,9 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     );
   }
 
-  // ── Seats card ────────────────────────────
   Widget _buildSeatsCard() {
     return Container(
-      padding: const EdgeInsets.symmetric(
-          horizontal: 20, vertical: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       decoration: BoxDecoration(
         color: const Color(0xFFEEF4ED),
         borderRadius: BorderRadius.circular(16),
@@ -510,8 +489,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                 const SizedBox(height: 4),
                 Text(
                   'How many passengers can\nyou take?',
-                  style: TextStyle(
-                      fontSize: 13, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                 ),
               ],
             ),
@@ -527,8 +505,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                 primary: _primary,
               ),
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   '$_seats',
                   style: const TextStyle(
@@ -550,7 +527,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     );
   }
 
-  // ── Price field ───────────────────────────
   Widget _buildPriceField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -562,8 +538,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                 color: Colors.grey.shade700)),
         const SizedBox(height: 8),
         Container(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
@@ -575,9 +550,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                 child: TextField(
                   controller: _priceController,
                   keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly
-                  ],
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w700,
@@ -600,7 +573,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     );
   }
 
-  // ── Vehicle tile ──────────────────────────
   Widget _buildVehicleTile(Vehicle v) {
     final isSelected = _selectedVehicle?.id == v.id;
     return GestureDetector(
@@ -608,8 +580,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(
-            horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
@@ -646,8 +617,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                   const SizedBox(height: 2),
                   Text(v.subtitle,
                       style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade500)),
+                          fontSize: 13, color: Colors.grey.shade500)),
                 ],
               ),
             ),
@@ -663,7 +633,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     );
   }
 
-  // ── Next button ───────────────────────────
   Widget _buildNextButton() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -695,7 +664,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
   }
 }
 
-// ── Seats +/– button ─────────────────────────
 class _SeatsButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
@@ -727,8 +695,7 @@ class _SeatsButton extends StatelessWidget {
           ],
         ),
         child: Icon(icon,
-            color: filled ? Colors.white : Colors.grey.shade700,
-            size: 20),
+            color: filled ? Colors.white : Colors.grey.shade700, size: 20),
       ),
     );
   }
