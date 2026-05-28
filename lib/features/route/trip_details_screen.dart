@@ -14,6 +14,12 @@ class RouteData {
   final String meetingPoint;
   final String dropoffPoint;
 
+  // ← Coordonnées ajoutées pour la carte Step 3
+  final double departureLat;
+  final double departureLng;
+  final double destinationLat;
+  final double destinationLng;
+
   const RouteData({
     required this.departureCityName,
     required this.destinationCityName,
@@ -21,6 +27,10 @@ class RouteData {
     required this.destinationCityId,
     this.meetingPoint = '',
     this.dropoffPoint = '',
+    this.departureLat = 0.0,
+    this.departureLng = 0.0,
+    this.destinationLat = 0.0,
+    this.destinationLng = 0.0,
   });
 }
 
@@ -61,11 +71,9 @@ class TripDetailsScreen extends StatefulWidget {
 }
 
 class _TripDetailsScreenState extends State<TripDetailsScreen> {
-  // ── Theme ──────────────────────────────────
   static const Color _primary = Color(0xFF1E5C2E);
   static const Color _bg = Color(0xFFF4F5F0);
 
-  // ── State ──────────────────────────────────
   DateTime _departureDate = DateTime.now().add(const Duration(days: 1));
   TimeOfDay _departureTime = const TimeOfDay(hour: 8, minute: 30);
   int _seats = 3;
@@ -88,7 +96,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     super.dispose();
   }
 
-  // ── Fetch vehicles from Supabase ───────────
   Future<void> _fetchVehicles() async {
     try {
       final user = Supabase.instance.client.auth.currentUser;
@@ -138,7 +145,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     }
   }
 
-  // ── Date picker ────────────────────────────
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -155,7 +161,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     if (picked != null) setState(() => _departureDate = picked);
   }
 
-  // ── Time picker ────────────────────────────
   Future<void> _pickTime() async {
     final picked = await showTimePicker(
       context: context,
@@ -172,18 +177,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
 
   String _formatDate(DateTime d) {
     const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
     ];
     return '${months[d.month - 1]} ${d.day}, ${d.year}';
   }
@@ -229,6 +224,11 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
             destinationCityId: widget.routeData.destinationCityId,
             meetingPoint: widget.routeData.meetingPoint,
             dropoffPoint: widget.routeData.dropoffPoint,
+            // ← Coordonnées transmises depuis Step 1
+            departureLat: widget.routeData.departureLat,
+            departureLng: widget.routeData.departureLng,
+            destinationLat: widget.routeData.destinationLat,
+            destinationLng: widget.routeData.destinationLng,
             departureDateTime: dt,
             seats: _seats,
             price: price,
@@ -258,8 +258,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                   children: [
                     _buildStepHeader(),
                     const SizedBox(height: 24),
-
-                    // Date & Time row
                     Row(
                       children: [
                         Expanded(child: _buildDateField()),
@@ -268,16 +266,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-
-                    // Seats card
                     _buildSeatsCard(),
                     const SizedBox(height: 16),
-
-                    // Price per seat
                     _buildPriceField(),
                     const SizedBox(height: 20),
-
-                    // Select vehicle
                     Text(
                       'Select Vehicle',
                       style: TextStyle(
@@ -286,8 +278,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                           color: Colors.grey.shade700),
                     ),
                     const SizedBox(height: 10),
-
-                    // Vehicle list (loading / empty / list)
                     if (_loadingVehicles)
                       const Center(
                         child: Padding(
@@ -321,7 +311,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                       )
                     else
                       ..._vehicles.map(_buildVehicleTile),
-
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -334,7 +323,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     );
   }
 
-  // ── AppBar ────────────────────────────────
   Widget _buildAppBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -365,7 +353,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     );
   }
 
-  // ── Step header ───────────────────────────
   Widget _buildStepHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,7 +388,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     );
   }
 
-  // ── Date field ────────────────────────────
   Widget _buildDateField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -441,7 +427,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     );
   }
 
-  // ── Time field ────────────────────────────
   Widget _buildTimeField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -463,7 +448,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
             ),
             child: Row(
               children: [
-                Icon(Icons.access_time, color: Colors.grey.shade600, size: 18),
+                Icon(Icons.access_time,
+                    color: Colors.grey.shade600, size: 18),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -480,7 +466,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     );
   }
 
-  // ── Seats card ────────────────────────────
   Widget _buildSeatsCard() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
@@ -542,7 +527,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     );
   }
 
-  // ── Price field ───────────────────────────
   Widget _buildPriceField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -578,7 +562,9 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
               const Text(
                 'MAD',
                 style: TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.w600, color: _primary),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: _primary),
               ),
             ],
           ),
@@ -587,7 +573,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     );
   }
 
-  // ── Vehicle tile ──────────────────────────
   Widget _buildVehicleTile(Vehicle v) {
     final isSelected = _selectedVehicle?.id == v.id;
     return GestureDetector(
@@ -610,8 +595,9 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color:
-                    isSelected ? const Color(0xFFD6EDDA) : Colors.grey.shade100,
+                color: isSelected
+                    ? const Color(0xFFD6EDDA)
+                    : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -630,8 +616,8 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                           fontSize: 15, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 2),
                   Text(v.subtitle,
-                      style:
-                          TextStyle(fontSize: 13, color: Colors.grey.shade500)),
+                      style: TextStyle(
+                          fontSize: 13, color: Colors.grey.shade500)),
                 ],
               ),
             ),
@@ -647,7 +633,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     );
   }
 
-  // ── Next button ───────────────────────────
   Widget _buildNextButton() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -660,14 +645,15 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
             backgroundColor: _primary,
             foregroundColor: Colors.white,
             elevation: 0,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14)),
           ),
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text('Next',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                  style: TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w700)),
               SizedBox(width: 8),
               Icon(Icons.arrow_forward_rounded, size: 20),
             ],
@@ -678,7 +664,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
   }
 }
 
-// ── Seats +/– button ─────────────────────────
 class _SeatsButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
