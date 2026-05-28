@@ -36,18 +36,15 @@ class RouteDetailsScreen extends StatefulWidget {
 }
 
 class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
-  // ── Theme ──────────────────────────────────
   static const Color _primary = Color(0xFF1E5C2E);
   static const Color _primaryLight = Color(0xFFE8F5E9);
   static const Color _bg = Color(0xFFF4F5F0);
   static const Color _hint = Color(0xFF9E9E9E);
   static const Color _label = Color(0xFF424242);
 
-  // ── Controllers ────────────────────────────
   final TextEditingController _meetingController = TextEditingController();
   final TextEditingController _dropoffController = TextEditingController();
 
-  // ── State ──────────────────────────────────
   City? _departureCity;
   City? _destinationCity;
   List<City> _cities = [];
@@ -66,7 +63,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     super.dispose();
   }
 
-  // ── Fetch cities from Supabase ─────────────
   Future<void> _fetchCities() async {
     try {
       final response = await Supabase.instance.client
@@ -106,7 +102,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     }
   }
 
-  // ── Swap departure ↔ destination ───────────
   void _swapCities() {
     setState(() {
       final tmp = _departureCity;
@@ -115,7 +110,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     });
   }
 
-  // ── City picker bottom-sheet ───────────────
   Future<City?> _pickCity(String title) async {
     if (_loadingCities) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -165,13 +159,17 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
             destinationCityId: _destinationCity!.id,
             meetingPoint: _meetingController.text.trim(),
             dropoffPoint: _dropoffController.text.trim(),
+            // ← Coordonnées transmises pour la carte Step 3
+            departureLat: _departureCity!.lat,
+            departureLng: _departureCity!.lng,
+            destinationLat: _destinationCity!.lat,
+            destinationLng: _destinationCity!.lng,
           ),
         ),
       ),
     );
   }
 
-  // ────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -188,8 +186,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                   children: [
                     const _SectionHeader(primary: _primary),
                     const SizedBox(height: 20),
-
-                    // From / To card
                     _loadingCities
                         ? _buildLoadingCard()
                         : _CityCard(
@@ -212,8 +208,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                             label: _label,
                           ),
                     const SizedBox(height: 14),
-
-                    // Meeting point
                     _PointCard(
                       icon: Icons.directions_walk_rounded,
                       iconBg: const Color(0xFFE8F5E9),
@@ -226,8 +220,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                       primary: _primary,
                     ),
                     const SizedBox(height: 14),
-
-                    // Drop-off point
                     _PointCard(
                       icon: Icons.flag_rounded,
                       iconBg: const Color(0xFFFFF8E1),
@@ -239,8 +231,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
                       primary: _primary,
                     ),
                     const SizedBox(height: 14),
-
-                    // Map preview — vraie carte Google Maps
                     _MapPreview(
                       departure: _departureCity,
                       destination: _destinationCity,
@@ -622,14 +612,13 @@ class _MapPreviewState extends State<_MapPreview> {
   bool _mapReady = false;
 
   static const CameraPosition _initialPosition = CameraPosition(
-    target: LatLng(31.7917, -7.0926), // Centre du Maroc
+    target: LatLng(31.7917, -7.0926),
     zoom: 5,
   );
 
   @override
   void didUpdateWidget(_MapPreview oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Redessine la route dès que départ ou destination change
     if (oldWidget.departure != widget.departure ||
         oldWidget.destination != widget.destination) {
       if (_mapReady) _drawRoute();
@@ -638,7 +627,6 @@ class _MapPreviewState extends State<_MapPreview> {
 
   Future<void> _drawRoute() async {
     if (widget.departure == null || widget.destination == null) {
-      // Réinitialise la carte si une ville est désélectionnée
       setState(() {
         _markers.clear();
         _polylines.clear();
@@ -653,7 +641,6 @@ class _MapPreviewState extends State<_MapPreview> {
     final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
     if (apiKey == null || apiKey.isEmpty) return;
 
-    // Utilise les coordonnées lat/lng directement depuis Supabase
     final origin = '${widget.departure!.lat},${widget.departure!.lng}';
     final destination = '${widget.destination!.lat},${widget.destination!.lng}';
 
@@ -683,13 +670,11 @@ class _MapPreviewState extends State<_MapPreview> {
         (endLoc['lng'] as num).toDouble(),
       );
 
-      // Décode la polyline
       final encoded = route['overview_polyline']['points'] as String;
       final decodedPoints = PolylinePoints().decodePolyline(encoded);
       final polylineCoords =
           decodedPoints.map((e) => LatLng(e.latitude, e.longitude)).toList();
 
-      // Anime la caméra pour afficher les deux villes
       final controller = await _controller.future;
       final swLat = startLatLng.latitude < endLatLng.latitude
           ? startLatLng.latitude
@@ -761,7 +746,6 @@ class _MapPreviewState extends State<_MapPreview> {
         ),
         child: Stack(
           children: [
-            // Vraie carte Google Maps
             GoogleMap(
               initialCameraPosition: _initialPosition,
               markers: _markers,
@@ -782,8 +766,6 @@ class _MapPreviewState extends State<_MapPreview> {
                 _drawRoute();
               },
             ),
-
-            // Badge "Preview on Map" en bas à gauche
             Positioned(
               bottom: 14,
               left: 14,
@@ -816,9 +798,6 @@ class _MapPreviewState extends State<_MapPreview> {
                 ),
               ),
             ),
-
-            // Indicateur de chargement si les villes sont sélectionnées
-            // mais la route n'est pas encore tracée
             if (widget.departure != null &&
                 widget.destination != null &&
                 _polylines.isEmpty)
