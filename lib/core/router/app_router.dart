@@ -21,7 +21,8 @@ import 'package:ride_link/features/home/rides_screen.dart';
 import 'package:ride_link/core/router/app_shell.dart';
 import 'package:ride_link/features/onboarding/onboarding_screen.dart';
 import 'package:ride_link/features/passenger/screens/search_screen.dart';
-import 'package:ride_link/features/notifications/screens/notifications_screen.dart';
+import 'package:ride_link/features/passenger/screens/notifications_screen.dart';
+import 'package:ride_link/features/route/route_details_screen.dart';
 import 'package:ride_link/features/vehicles/presentation/screens/vehicles_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ride_link/features/booking/screens/booking_requests_screen.dart';
@@ -66,6 +67,11 @@ const List<NavigationDestination> _driverDestinations = [
     icon: Icon(Icons.query_stats_outlined),
     selectedIcon: Icon(Icons.query_stats),
     label: 'Activity',
+  ),
+  NavigationDestination(
+    icon: Icon(Icons.add_circle_outline),
+    selectedIcon: Icon(Icons.add_circle),
+    label: 'Add Ride',
   ),
   NavigationDestination(
     icon: Icon(Icons.notifications_outlined),
@@ -212,6 +218,12 @@ GoRouter _createRouter() {
             GoRoute(
               path: '/driver/activity',
               builder: (context, state) => const ActivityScreen(),
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: '/driver/add-ride',
+              builder: (context, state) => const RouteDetailsScreen(),
             ),
           ]),
           StatefulShellBranch(routes: [
