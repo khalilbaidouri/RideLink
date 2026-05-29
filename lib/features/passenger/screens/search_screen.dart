@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:ride_link/features/passenger/providers/search_results_provider.dart';
 import 'package:ride_link/features/passenger/widgets/search/search_app_bar.dart';
 import 'package:ride_link/features/passenger/widgets/search/search_result_card.dart';
+import 'package:ride_link/features/passenger/widgets/search/no_rides_found.dart';
+import 'package:ride_link/features/passenger/providers/search_ride_notifier.dart';
 
 class SearchScreen extends ConsumerWidget {
   const SearchScreen({super.key});
@@ -43,16 +45,18 @@ class SearchScreen extends ConsumerWidget {
                   ),
                 ),
                 if (results.isEmpty)
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                    sliver: SliverToBoxAdapter(
-                      child: Text(
-                        'No rides match your filters yet.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ),
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: NoRidesFound(
+                      onClearFilters: () {
+                        // Reset tout : villes, date, tri
+                        ref.read(searchRideProvider.notifier).reset();
+                        ref.read(searchSortProvider.notifier).state =
+                            const SearchSortState(
+                                orderBy: SearchOrderBy.time, ascending: true);
+                      },
+                      onSearchAgain: () =>
+                          ref.invalidate(searchResultsProvider),
                     ),
                   )
                 else
