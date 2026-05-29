@@ -25,6 +25,7 @@ import 'package:ride_link/features/passenger/screens/notifications_screen.dart';
 import 'package:ride_link/features/route/route_details_screen.dart';
 import 'package:ride_link/features/vehicles/presentation/screens/vehicles_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:ride_link/features/booking/screens/booking_requests_screen.dart';
 
 final GoRouter appRouter = _createRouter();
 
@@ -266,7 +267,10 @@ GoRouter _createRouter() {
         builder: (context, state) => RideDetailsScreen(
           rideId: state.pathParameters['id'] ?? '',
         ),
-      ),
+      ),GoRoute(
+        path: '/driver/bookings',
+        builder: (context, state) => const BookingRequestsScreen(),
+),
     ],
   );
 }

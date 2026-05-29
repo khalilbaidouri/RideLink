@@ -7,6 +7,8 @@ import '../../models/user_model.dart';
 import 'profile_navbar.dart';
 import '../vehicles/domain/entities/vehicle.dart';
 import '../vehicles/providers/vehicles_provider.dart';
+import 'package:ride_link/features/notifications/providers/notification_provider.dart';
+
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -56,6 +58,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   Widget build(BuildContext context) {
     final vehiclesState = ref.watch(vehiclesProvider);
     final vehicles = ref.watch(sortedVehiclesProvider);
+    final unread = ref.watch(unreadCountProvider);
+
 
     return FutureBuilder<UserModel>(
       future: _profileFuture,
@@ -94,10 +98,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               _ProfileMenuCard(
                 onBookings: () => context.go('/passenger/rides'),
                 onRides: () => context.go('/passenger/rides'),
-                onNotifications: () => context.go('/passenger/messages'),
+                onNotifications: () => context.go('/passenger/notifications'),
                 onSettings: () => context.go('/passenger/profile/settings'),
                 onLogout: () => _signOut(context),
-                notificationsCount: 3,
+                notificationsCount: unread,
               ),
             ],
           ),
