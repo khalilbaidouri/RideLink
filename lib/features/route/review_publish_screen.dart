@@ -1,32 +1,23 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // ─────────────────────────────────────────────
 //  Data passed from Step 1 + Step 2
 // ─────────────────────────────────────────────
 class RideReviewData {
-  // Route (Step 1)
   final String departureCityName;
   final String destinationCityName;
   final int departureCityId;
   final int destinationCityId;
   final String meetingPoint;
   final String dropoffPoint;
-
-  // Coordinates for map (from City objects in Step 1)
   final double departureLat;
   final double departureLng;
   final double destinationLat;
   final double destinationLng;
-
-  // Trip (Step 2)
   final DateTime departureDateTime;
   final int seats;
   final double price;
@@ -61,7 +52,6 @@ class RideReviewData {
 // ─────────────────────────────────────────────
 class ReviewPublishScreen extends StatefulWidget {
   final RideReviewData data;
-
   const ReviewPublishScreen({super.key, required this.data});
 
   @override
@@ -75,7 +65,6 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
   bool _isPublishing = false;
   bool _isSavingDraft = false;
 
-  // ── Format helpers ────────────────────────
   String _formatDateTime(DateTime dt) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -89,8 +78,18 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
       dayStr = 'Tomorrow';
     } else {
       const months = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec'
       ];
       dayStr = '${months[dt.month - 1]} ${dt.day}';
     }
@@ -101,7 +100,6 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
     return '$dayStr, $h:$m $period';
   }
 
-  // ── Publish ride to Supabase ──────────────
   Future<void> _publishRide() async {
     setState(() => _isPublishing = true);
     try {
@@ -149,7 +147,6 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
     }
   }
 
-  // ── Save as Draft ─────────────────────────
   Future<void> _saveDraft() async {
     setState(() => _isSavingDraft = true);
     try {
@@ -284,7 +281,6 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
                           height: 1.4),
                     ),
                     const SizedBox(height: 14),
-                    // ── Vraie carte Google Maps ──
                     _ReviewMapPreview(
                       departureCityName: d.departureCityName,
                       destinationCityName: d.destinationCityName,
@@ -310,7 +306,6 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
     );
   }
 
-  // ── App Bar ───────────────────────────────
   Widget _buildAppBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -341,7 +336,6 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
     );
   }
 
-  // ── Step header ───────────────────────────
   Widget _buildStepHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -377,7 +371,6 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
     );
   }
 
-  // ── Details card ──────────────────────────
   Widget _buildDetailsCard(RideReviewData d) {
     return Container(
       decoration: BoxDecoration(
@@ -392,7 +385,6 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
       ),
       child: Column(
         children: [
-          // Pickup / Drop-off
           _DetailRow(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -445,13 +437,11 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
                     ],
                   ),
                 ),
-                _EditButton(onTap: () => _goToStep(1)),
+                _EditButton(onTap: () => Navigator.pop(context)),
               ],
             ),
           ),
           _Divider(),
-
-          // Date & Time
           _DetailRow(
             child: Row(
               children: [
@@ -479,13 +469,11 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
                     ],
                   ),
                 ),
-                _EditButton(onTap: () => _goToStep(2)),
+                _EditButton(onTap: () => Navigator.pop(context)),
               ],
             ),
           ),
           _Divider(),
-
-          // Meeting Point
           _DetailRow(
             child: Row(
               children: [
@@ -513,13 +501,11 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
                     ],
                   ),
                 ),
-                _EditButton(onTap: () => _goToStep(1)),
+                _EditButton(onTap: () => Navigator.pop(context)),
               ],
             ),
           ),
           _Divider(),
-
-          // Seats & Price
           _DetailRow(
             child: Row(
               children: [
@@ -559,13 +545,11 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
                     ],
                   ),
                 ),
-                _EditButton(onTap: () => _goToStep(2)),
+                _EditButton(onTap: () => Navigator.pop(context)),
               ],
             ),
           ),
           _Divider(),
-
-          // Vehicle
           _DetailRow(
             child: Row(
               children: [
@@ -593,7 +577,7 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
                     ],
                   ),
                 ),
-                _EditButton(onTap: () => _goToStep(2)),
+                _EditButton(onTap: () => Navigator.pop(context)),
               ],
             ),
           ),
@@ -602,7 +586,6 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
     );
   }
 
-  // ── Tags row ──────────────────────────────
   Widget _buildTagsRow() {
     return const Wrap(
       spacing: 10,
@@ -615,7 +598,6 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
     );
   }
 
-  // ── Bottom buttons ────────────────────────
   Widget _buildBottomButtons() {
     final bool busy = _isPublishing || _isSavingDraft;
     return Padding(
@@ -671,14 +653,10 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
       ),
     );
   }
-
-  void _goToStep(int step) {
-    Navigator.pop(context);
-  }
 }
 
 // ─────────────────────────────────────────────
-//  Real Google Maps Preview (same as RouteDetailsScreen)
+//  Map Preview — ligne droite (zéro CORS)
 // ─────────────────────────────────────────────
 
 class _ReviewMapPreview extends StatefulWidget {
@@ -708,105 +686,68 @@ class _ReviewMapPreviewState extends State<_ReviewMapPreview> {
   final Completer<GoogleMapController> _controller = Completer();
   final Set<Marker> _markers = {};
   final Set<Polyline> _polylines = {};
-  bool _mapReady = false;
 
   static const CameraPosition _initialPosition = CameraPosition(
-    target: LatLng(31.7917, -7.0926), // Centre du Maroc
+    target: LatLng(31.7917, -7.0926),
     zoom: 5,
   );
 
+  // ── FIX CORS : ligne droite, aucun appel HTTP ──
   Future<void> _drawRoute() async {
-    final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
-    if (apiKey == null || apiKey.isEmpty) return;
+    final startLatLng = LatLng(widget.departureLat, widget.departureLng);
+    final endLatLng = LatLng(widget.destinationLat, widget.destinationLng);
 
-    final origin = '${widget.departureLat},${widget.departureLng}';
-    final destination = '${widget.destinationLat},${widget.destinationLng}';
+    final controller = await _controller.future;
 
-    final url = 'https://maps.googleapis.com/maps/api/directions/json'
-        '?origin=$origin'
-        '&destination=$destination'
-        '&key=$apiKey';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-      final data = jsonDecode(response.body);
-
-      if (data['status'] != 'OK') return;
-
-      final route = data['routes'][0];
-      final leg = route['legs'][0];
-
-      final startLoc = leg['start_location'];
-      final endLoc = leg['end_location'];
-
-      final startLatLng = LatLng(
-        (startLoc['lat'] as num).toDouble(),
-        (startLoc['lng'] as num).toDouble(),
-      );
-      final endLatLng = LatLng(
-        (endLoc['lat'] as num).toDouble(),
-        (endLoc['lng'] as num).toDouble(),
-      );
-
-      // Décode la polyline
-      final encoded = route['overview_polyline']['points'] as String;
-      final decodedPoints = PolylinePoints().decodePolyline(encoded);
-      final polylineCoords =
-          decodedPoints.map((e) => LatLng(e.latitude, e.longitude)).toList();
-
-      // Anime la caméra pour afficher les deux villes
-      final controller = await _controller.future;
-      final swLat = startLatLng.latitude < endLatLng.latitude
-          ? startLatLng.latitude
-          : endLatLng.latitude;
-      final swLng = startLatLng.longitude < endLatLng.longitude
-          ? startLatLng.longitude
-          : endLatLng.longitude;
-      final neLat = startLatLng.latitude > endLatLng.latitude
-          ? startLatLng.latitude
-          : endLatLng.latitude;
-      final neLng = startLatLng.longitude > endLatLng.longitude
-          ? startLatLng.longitude
-          : endLatLng.longitude;
-
-      controller.animateCamera(
-        CameraUpdate.newLatLngBounds(
-          LatLngBounds(
-            southwest: LatLng(swLat, swLng),
-            northeast: LatLng(neLat, neLng),
+    controller.animateCamera(
+      CameraUpdate.newLatLngBounds(
+        LatLngBounds(
+          southwest: LatLng(
+            startLatLng.latitude < endLatLng.latitude
+                ? startLatLng.latitude
+                : endLatLng.latitude,
+            startLatLng.longitude < endLatLng.longitude
+                ? startLatLng.longitude
+                : endLatLng.longitude,
           ),
-          60,
+          northeast: LatLng(
+            startLatLng.latitude > endLatLng.latitude
+                ? startLatLng.latitude
+                : endLatLng.latitude,
+            startLatLng.longitude > endLatLng.longitude
+                ? startLatLng.longitude
+                : endLatLng.longitude,
+          ),
         ),
-      );
+        60,
+      ),
+    );
 
-      setState(() {
-        _markers.clear();
-        _polylines.clear();
+    setState(() {
+      _markers.clear();
+      _polylines.clear();
 
-        _markers.add(Marker(
-          markerId: const MarkerId('start'),
-          position: startLatLng,
-          infoWindow: InfoWindow(title: widget.departureCityName),
-        ));
+      _markers.add(Marker(
+        markerId: const MarkerId('start'),
+        position: startLatLng,
+        infoWindow: InfoWindow(title: widget.departureCityName),
+      ));
 
-        _markers.add(Marker(
-          markerId: const MarkerId('end'),
-          position: endLatLng,
-          infoWindow: InfoWindow(title: widget.destinationCityName),
-        ));
+      _markers.add(Marker(
+        markerId: const MarkerId('end'),
+        position: endLatLng,
+        infoWindow: InfoWindow(title: widget.destinationCityName),
+      ));
 
-        _polylines.add(Polyline(
-          polylineId: const PolylineId('route'),
-          points: polylineCoords,
-          color: widget.primary,
-          width: 4,
-          startCap: Cap.roundCap,
-          endCap: Cap.roundCap,
-        ));
-      });
-    } catch (_) {
-      // Silently ignore network errors for preview
-    }
+      _polylines.add(Polyline(
+        polylineId: const PolylineId('route'),
+        points: [startLatLng, endLatLng],
+        color: widget.primary,
+        width: 4,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
+      ));
+    });
   }
 
   @override
@@ -826,7 +767,6 @@ class _ReviewMapPreviewState extends State<_ReviewMapPreview> {
         ),
         child: Stack(
           children: [
-            // Vraie carte Google Maps
             GoogleMap(
               initialCameraPosition: _initialPosition,
               markers: _markers,
@@ -843,12 +783,9 @@ class _ReviewMapPreviewState extends State<_ReviewMapPreview> {
                 if (!_controller.isCompleted) {
                   _controller.complete(c);
                 }
-                setState(() => _mapReady = true);
                 _drawRoute();
               },
             ),
-
-            // Badge "Preview on Map" en bas à gauche
             Positioned(
               bottom: 14,
               left: 14,
@@ -881,15 +818,6 @@ class _ReviewMapPreviewState extends State<_ReviewMapPreview> {
                 ),
               ),
             ),
-
-            // Indicateur de chargement pendant le tracé de la route
-            if (_mapReady && _polylines.isEmpty)
-              const Center(
-                child: CircularProgressIndicator(
-                  color: Color(0xFF1E5C2E),
-                  strokeWidth: 2.5,
-                ),
-              ),
           ],
         ),
       ),

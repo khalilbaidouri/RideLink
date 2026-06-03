@@ -1,11 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'trip_details_screen.dart';
 
@@ -129,7 +125,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
     );
   }
 
-  // ── Validate & go to Step 2 ────────────────
   void _onNext() {
     if (_departureCity == null || _destinationCity == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -159,7 +154,6 @@ class _RouteDetailsScreenState extends State<RouteDetailsScreen> {
             destinationCityId: _destinationCity!.id,
             meetingPoint: _meetingController.text.trim(),
             dropoffPoint: _dropoffController.text.trim(),
-            // ← Coordonnées transmises pour la carte Step 3
             departureLat: _departureCity!.lat,
             departureLng: _departureCity!.lng,
             destinationLat: _destinationCity!.lat,
@@ -308,6 +302,7 @@ class _AppBar extends StatelessWidget {
   }
 }
 
+// ── FIX : Flexible sur "Step 1 of 3" pour éviter le overflow ──
 class _SectionHeader extends StatelessWidget {
   final Color primary;
   const _SectionHeader({required this.primary});
@@ -321,18 +316,25 @@ class _SectionHeader extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(
-              'Route Details',
-              style: TextStyle(
-                color: primary,
-                fontSize: 26,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.5,
+            Expanded(
+              child: Text(
+                'Route Details',
+                style: TextStyle(
+                  color: primary,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            Text(
-              'Step 1 of 3',
-              style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                'Step 1 of 3',
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
@@ -588,7 +590,7 @@ class _PointCard extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────
-//  Map Preview — vraie carte Google Maps
+//  Map Preview — ligne droite (pas d'appel HTTP → pas de CORS)
 // ─────────────────────────────────────────────
 
 class _MapPreview extends StatefulWidget {
@@ -625,6 +627,7 @@ class _MapPreviewState extends State<_MapPreview> {
     }
   }
 
+  // ── FIX CORS : ligne droite sans appel HTTP ──
   Future<void> _drawRoute() async {
     if (widget.departure == null || widget.destination == null) {
       setState(() {
@@ -638,95 +641,60 @@ class _MapPreviewState extends State<_MapPreview> {
       return;
     }
 
-    final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
-    if (apiKey == null || apiKey.isEmpty) return;
+    final startLatLng = LatLng(widget.departure!.lat, widget.departure!.lng);
+    final endLatLng = LatLng(widget.destination!.lat, widget.destination!.lng);
 
-    final origin = '${widget.departure!.lat},${widget.departure!.lng}';
-    final destination = '${widget.destination!.lat},${widget.destination!.lng}';
+    final controller = await _controller.future;
 
-    final url = 'https://maps.googleapis.com/maps/api/directions/json'
-        '?origin=$origin'
-        '&destination=$destination'
-        '&key=$apiKey';
+    final swLat = startLatLng.latitude < endLatLng.latitude
+        ? startLatLng.latitude
+        : endLatLng.latitude;
+    final swLng = startLatLng.longitude < endLatLng.longitude
+        ? startLatLng.longitude
+        : endLatLng.longitude;
+    final neLat = startLatLng.latitude > endLatLng.latitude
+        ? startLatLng.latitude
+        : endLatLng.latitude;
+    final neLng = startLatLng.longitude > endLatLng.longitude
+        ? startLatLng.longitude
+        : endLatLng.longitude;
 
-    try {
-      final response = await http.get(Uri.parse(url));
-      final data = jsonDecode(response.body);
-
-      if (data['status'] != 'OK') return;
-
-      final route = data['routes'][0];
-      final leg = route['legs'][0];
-
-      final startLoc = leg['start_location'];
-      final endLoc = leg['end_location'];
-
-      final startLatLng = LatLng(
-        (startLoc['lat'] as num).toDouble(),
-        (startLoc['lng'] as num).toDouble(),
-      );
-      final endLatLng = LatLng(
-        (endLoc['lat'] as num).toDouble(),
-        (endLoc['lng'] as num).toDouble(),
-      );
-
-      final encoded = route['overview_polyline']['points'] as String;
-      final decodedPoints = PolylinePoints().decodePolyline(encoded);
-      final polylineCoords =
-          decodedPoints.map((e) => LatLng(e.latitude, e.longitude)).toList();
-
-      final controller = await _controller.future;
-      final swLat = startLatLng.latitude < endLatLng.latitude
-          ? startLatLng.latitude
-          : endLatLng.latitude;
-      final swLng = startLatLng.longitude < endLatLng.longitude
-          ? startLatLng.longitude
-          : endLatLng.longitude;
-      final neLat = startLatLng.latitude > endLatLng.latitude
-          ? startLatLng.latitude
-          : endLatLng.latitude;
-      final neLng = startLatLng.longitude > endLatLng.longitude
-          ? startLatLng.longitude
-          : endLatLng.longitude;
-
-      controller.animateCamera(
-        CameraUpdate.newLatLngBounds(
-          LatLngBounds(
-            southwest: LatLng(swLat, swLng),
-            northeast: LatLng(neLat, neLng),
-          ),
-          60,
+    controller.animateCamera(
+      CameraUpdate.newLatLngBounds(
+        LatLngBounds(
+          southwest: LatLng(swLat, swLng),
+          northeast: LatLng(neLat, neLng),
         ),
-      );
+        60,
+      ),
+    );
 
-      setState(() {
-        _markers.clear();
-        _polylines.clear();
+    setState(() {
+      _markers.clear();
+      _polylines.clear();
 
-        _markers.add(Marker(
-          markerId: const MarkerId('start'),
-          position: startLatLng,
-          infoWindow: InfoWindow(title: widget.departure!.name),
-        ));
+      _markers.add(Marker(
+        markerId: const MarkerId('start'),
+        position: startLatLng,
+        infoWindow: InfoWindow(title: widget.departure!.name),
+      ));
 
-        _markers.add(Marker(
-          markerId: const MarkerId('end'),
-          position: endLatLng,
-          infoWindow: InfoWindow(title: widget.destination!.name),
-        ));
+      _markers.add(Marker(
+        markerId: const MarkerId('end'),
+        position: endLatLng,
+        infoWindow: InfoWindow(title: widget.destination!.name),
+      ));
 
-        _polylines.add(Polyline(
-          polylineId: const PolylineId('route'),
-          points: polylineCoords,
-          color: widget.primary,
-          width: 4,
-          startCap: Cap.roundCap,
-          endCap: Cap.roundCap,
-        ));
-      });
-    } catch (_) {
-      // Silently ignore network errors for preview
-    }
+      // Ligne droite entre les 2 villes — aucun appel HTTP, zéro CORS
+      _polylines.add(Polyline(
+        polylineId: const PolylineId('route'),
+        points: [startLatLng, endLatLng],
+        color: widget.primary,
+        width: 4,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
+      ));
+    });
   }
 
   @override
@@ -744,70 +712,25 @@ class _MapPreviewState extends State<_MapPreview> {
                 offset: const Offset(0, 2)),
           ],
         ),
-        child: Stack(
-          children: [
-            GoogleMap(
-              initialCameraPosition: _initialPosition,
-              markers: _markers,
-              polylines: _polylines,
-              mapType: MapType.normal,
-              zoomControlsEnabled: false,
-              myLocationButtonEnabled: false,
-              compassEnabled: false,
-              rotateGesturesEnabled: false,
-              scrollGesturesEnabled: false,
-              zoomGesturesEnabled: false,
-              tiltGesturesEnabled: false,
-              onMapCreated: (GoogleMapController c) {
-                if (!_controller.isCompleted) {
-                  _controller.complete(c);
-                }
-                setState(() => _mapReady = true);
-                _drawRoute();
-              },
-            ),
-            Positioned(
-              bottom: 14,
-              left: 14,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black.withOpacity(0.12),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2)),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.map_outlined, size: 16, color: widget.primary),
-                    const SizedBox(width: 6),
-                    const Text(
-                      'Preview on Map',
-                      style: TextStyle(
-                          color: Color(0xFF1A1A1A),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (widget.departure != null &&
-                widget.destination != null &&
-                _polylines.isEmpty)
-              const Center(
-                child: CircularProgressIndicator(
-                  color: Color(0xFF1E5C2E),
-                  strokeWidth: 2.5,
-                ),
-              ),
-          ],
+        child: GoogleMap(
+          initialCameraPosition: _initialPosition,
+          markers: _markers,
+          polylines: _polylines,
+          mapType: MapType.normal,
+          zoomControlsEnabled: false,
+          myLocationButtonEnabled: false,
+          compassEnabled: false,
+          rotateGesturesEnabled: false,
+          scrollGesturesEnabled: false,
+          zoomGesturesEnabled: false,
+          tiltGesturesEnabled: false,
+          onMapCreated: (GoogleMapController c) {
+            if (!_controller.isCompleted) {
+              _controller.complete(c);
+            }
+            setState(() => _mapReady = true);
+            _drawRoute();
+          },
         ),
       ),
     );
