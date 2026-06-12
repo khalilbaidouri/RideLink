@@ -12,7 +12,6 @@ import 'package:ride_link/features/driver/alerts_screen.dart';
 import 'package:ride_link/features/driver/dashboard_screen.dart';
 import 'package:ride_link/features/passenger/screens/home_screen.dart';
 import 'package:ride_link/features/passenger/screens/ride_details_screen.dart';
-
 import 'package:ride_link/features/profile/change_password.dart';
 import 'package:ride_link/features/profile/settings_screen.dart';
 import 'package:ride_link/features/home/messages_screen.dart';
@@ -66,7 +65,7 @@ const List<NavigationDestination> _driverDestinations = [
   NavigationDestination(
     icon: Icon(Icons.query_stats_outlined),
     selectedIcon: Icon(Icons.query_stats),
-    label: 'Activity',
+    label: 'Books',
   ),
   NavigationDestination(
     icon: Icon(Icons.add_circle_outline),
@@ -220,8 +219,8 @@ GoRouter _createRouter() {
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
-              path: '/driver/activity',
-              builder: (context, state) => const ActivityScreen(),
+              path: '/driver/books',
+              builder: (context, state) => const BookingRequestsScreen(),
             ),
           ]),
           StatefulShellBranch(routes: [
@@ -275,10 +274,8 @@ GoRouter _createRouter() {
         builder: (context, state) => RideDetailsScreen(
           rideId: state.pathParameters['id'] ?? '',
         ),
-      ),GoRoute(
-        path: '/driver/bookings',
-        builder: (context, state) => const BookingRequestsScreen(),
-),
+      ),
+      // ✅ Duplicate /driver/bookings route removed
     ],
   );
 }
