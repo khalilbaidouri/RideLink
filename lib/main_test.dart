@@ -228,5 +228,5 @@ class _MapSampleState extends State<MapSample> {
         ],
       ),
     );
-  }
+  }   
 }

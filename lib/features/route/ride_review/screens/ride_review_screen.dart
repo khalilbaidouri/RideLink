@@ -329,9 +329,8 @@ class _PassengerBottomNav extends StatelessWidget {
                       ),
                       child: Icon(
                         items[i].$1,
-                        color: isActive
-                            ? Colors.white
-                            : const Color(0xFF6B6B6B),
+                        color:
+                            isActive ? Colors.white : const Color(0xFF6B6B6B),
                         size: 22,
                       ),
                     ),
@@ -343,9 +342,8 @@ class _PassengerBottomNav extends StatelessWidget {
                         color: isActive
                             ? const Color(0xFF1A1A1A)
                             : const Color(0xFF6B6B6B),
-                        fontWeight: isActive
-                            ? FontWeight.w600
-                            : FontWeight.normal,
+                        fontWeight:
+                            isActive ? FontWeight.w600 : FontWeight.normal,
                       ),
                     ),
                   ],
