@@ -204,7 +204,7 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -232,7 +232,10 @@ class _ReviewPublishScreenState extends State<ReviewPublishScreen> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                Navigator.of(context).popUntil((r) => r.isFirst);
+                // 1️⃣ Fermer le dialog d'abord
+                Navigator.of(dialogContext).pop();
+                // 2️⃣ Puis vider toute la stack jusqu'à la première route
+                Navigator.of(context).popUntil((route) => route.isFirst);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: _primary,
