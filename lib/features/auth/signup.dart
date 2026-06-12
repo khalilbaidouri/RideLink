@@ -205,7 +205,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                           const SizedBox(height: 14),
                           Text(
-                            'I want to travel as',
+                            'I want to',
                             style: textTheme.labelLarge?.copyWith(
                               color: colors.onSurfaceVariant,
                             ),
@@ -217,6 +217,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             children: [
                               _RolePill(
                                 label: 'PASSENGER',
+                                subtitle: 'Book rides',
                                 selected: _role == UserRole.passenger,
                                 onPress: () => setState(() {
                                   _role = UserRole.passenger;
@@ -224,6 +225,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               ),
                               _RolePill(
                                 label: 'DRIVER',
+                                subtitle: 'Offer rides',
                                 selected: _role == UserRole.driver,
                                 onPress: () => setState(() {
                                   _role = UserRole.driver;
@@ -231,6 +233,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               ),
                               _RolePill(
                                 label: 'BOTH',
+                                subtitle: 'Ride & Drive',
                                 selected: _role == UserRole.both,
                                 onPress: () => setState(() {
                                   _role = UserRole.both;
@@ -325,9 +328,11 @@ class _RolePill extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onPress,
+    this.subtitle,
   });
 
   final String label;
+  final String? subtitle;
   final bool selected;
   final VoidCallback onPress;
 
@@ -335,21 +340,43 @@ class _RolePill extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return ChoiceChip(
-      label: Text(label),
-      selected: selected,
-      onSelected: (_) => onPress(),
-      selectedColor: colors.primaryContainer,
-      labelStyle: TextStyle(
-        color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
-        fontWeight: FontWeight.w600,
+    return GestureDetector(
+      onTap: onPress,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? colors.primaryContainer : colors.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected ? colors.primary : colors.outlineVariant,
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                subtitle!,
+                style: TextStyle(
+                  color: selected ? colors.onPrimaryContainer : colors.onSurfaceVariant,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: colors.outlineVariant),
-      ),
-      backgroundColor: colors.surfaceContainerHighest,
-      showCheckmark: false,
     );
   }
 }

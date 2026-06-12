@@ -91,7 +91,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 vehicles: vehicles,
                 errorMessage: vehiclesState.error,
                 onAddPressed: () {
-                  context.push('/passenger/vehicles');
+                  context.push('/driver/profile/vehicles');
                 },
               ),
               const SizedBox(height: 18),

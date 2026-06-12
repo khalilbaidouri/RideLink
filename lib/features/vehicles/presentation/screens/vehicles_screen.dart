@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/vehicle.dart';
 import '../../providers/vehicles_provider.dart';
 import '../widgets/vehicle_card.dart';   // ← déplacé ici
@@ -83,8 +84,18 @@ class _VehicleFormSheetState extends ConsumerState<VehicleFormSheet> {
         ),
       );
     } else {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error: User not authenticated')),
+          );
+        }
+        return;
+      }
+
       await notifier.addVehicle(
-        ownerId: 'current-user', // Remplacer par l'ID Supabase Auth
+        ownerId: userId,
         brand: _brand.text.trim(),
         model: _model.text.trim(),
         licensePlate: _plate.text.trim().toUpperCase(),

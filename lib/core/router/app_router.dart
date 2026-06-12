@@ -197,6 +197,10 @@ GoRouter _createRouter() {
                   path: 'change-password',
                   builder: (context, state) => const ChangePasswordScreen(),
                 ),
+                GoRoute(
+                  path: 'vehicles',
+                  builder: (context, state) => const VehiclesScreen(),
+                ),
               ],
             ),
           ]),
@@ -234,14 +238,22 @@ GoRouter _createRouter() {
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
-              path: '/driver/settings',
-              builder: (context, state) => const SettingsScreen(
-                changePasswordPath: '/driver/settings/change-password',
-              ),
+              path: '/driver/profile',
+              builder: (context, state) => const ProfileScreen(),
               routes: [
+                GoRoute(
+                  path: 'settings',
+                  builder: (context, state) => const SettingsScreen(
+                    changePasswordPath: '/driver/profile/change-password',
+                  ),
+                ),
                 GoRoute(
                   path: 'change-password',
                   builder: (context, state) => const ChangePasswordScreen(),
+                ),
+                GoRoute(
+                  path: 'vehicles',
+                  builder: (context, state) => const VehiclesScreen(),
                 ),
               ],
             ),
@@ -253,10 +265,6 @@ GoRouter _createRouter() {
         builder: (context, state) => const CityPickerScreen(
           title: 'Choisir une ville',
         ),
-      ),
-      GoRoute(
-        path: '/passenger/vehicles',
-        builder: (context, state) => const VehiclesScreen(),
       ),
       GoRoute(
         path: '/passenger/search',
