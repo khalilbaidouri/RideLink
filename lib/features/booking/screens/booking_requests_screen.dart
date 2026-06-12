@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../providers/booking_provider.dart';
 import '../models/booking_model.dart';
@@ -261,7 +262,7 @@ class _BookingList extends ConsumerWidget {
   }) {
     return showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -283,7 +284,7 @@ class _BookingList extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => dialogContext.pop(false), // ✅ fixed
             child: const Text(
               'Cancel',
               style: TextStyle(
@@ -294,7 +295,7 @@ class _BookingList extends ConsumerWidget {
             ),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => dialogContext.pop(true), // ✅ fixed
             style: ElevatedButton.styleFrom(
               backgroundColor: confirmColor,
               foregroundColor: Colors.white,
